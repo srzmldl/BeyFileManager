@@ -1,0 +1,41 @@
+{
+	"name": "BeY FileManager",
+	"version": "0.1",
+	"manifest_version": 2,
+	"description": "A Web-based FileManager",
+	"app": {
+		"background": {
+			"scripts": ["background.js"]
+		}
+	},
+	"icons": { "16": "16.png", "128": "128.png" },
+	// "name": "BeY FileManager",
+	// "version": "0.1",
+	// "manifest_version": 2,
+	// "description": "A Web-based FileManager",
+	// "icons": { 
+ //    "16": "16.png",             
+ //    "48": "48.png",            
+ //    "128": "128.png"
+ //    },  
+	// "browser_action": {
+	// 	"default_icon":{
+	// 		"19":"19.png",
+	// 		"38":"38.png"
+	// 	},
+	// 	"default_title":"BeY FileManager",
+	// 	"default_popup":"bey.html"
+	// },
+	"permissions": [
+		"fileSystem",
+		"unlimitedStorage",
+		"storage",
+		"https://www.google.com.hk/*",
+		"*://*.googleapis.com/*",
+		"*://*.baidu.com/*",
+		"*://*.kuaipan.cn/*",
+		"https://*.sina.com.cn/*",
+		"https://api.weipan.cn/*",
+		"http://7xjd7x.com1.z0.glb.clouddn.com/*"
+	]
+}
