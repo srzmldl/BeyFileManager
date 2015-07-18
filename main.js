@@ -1,4 +1,12 @@
-//var availableServerList=[sina:{}];
+
+var b64Encode=function( str ) {
+  return btoa(unescape(encodeURIComponent( str )));
+}
+
+var b64Decode=function( str ) {
+  return decodeURIComponent(escape(atob( str )));
+}
+
 var tokenManager={};
 tokenManager.vdiskToken={appkey:'2708795085',
 	appsecret:'533acb3c8a63082e923f6c80553f8b45',
@@ -17,18 +25,8 @@ tokenManager.qiniuToken={
 	bucket_name:'benjamin',
 	bucket_domain:'http://7xjd7x.com1.z0.glb.clouddn.com/test.mp3'};
 
+var availableServer=["sina","kdisk","qiniu","googledrive","onedrive","dropbox"];
 
-// var encodeSignatureForKdisk(httpMethod,baseUrl,parameters){
-
-// }
-
-function b64Encode( str ) {
-  return btoa(unescape(encodeURIComponent( str )));
-}
-
-function b64Decode( str ) {
-  return decodeURIComponent(escape(atob( str )));
-}
 
 function getHandlerByAJAX(url,parameters,callback) {
 	var getXHR = new XMLHttpRequest();
@@ -56,12 +54,14 @@ document.getElementById("uploadClick").addEventListener('click', onUploadHandler
 var onUploadHandler=function(){
 	var files=document.getElementById("uploadSelect").files;
 	var xhr=new XMLHttpRequest();
-	xhr.open("POST","http://upload-vdisk.sina.com.cn/2/files/sandbox/?access_token=aa0f4b6662WklwB2XjPlj4ctwDY4bfaa",true)
+	xhr.open("POST","http://upload-vdisk.sina.com.cn/2/files/sandbox/"+files[0].name+"?"+"access_token=13faf46652WklwB1f6c9foPXfFf4faed",true)
 	xhr.onreadystatechange=function(){
 		if(xhr.readyState===4){
 			document.getElementById("text_console").innerText=xhr.responseText;
 		}
 	};
-	xhr.setRequestHeader("Content-Type","multipart/form-data");
-	xhr.send(files[0]);	
+//	xhr.setRequestHeader("Content-Type","multipart/form-data");
+	var formData = new FormData();
+	formData.append('file', files[0]);
+	xhr.send(formData);	
 }

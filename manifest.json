@@ -27,14 +27,18 @@
 	// 	"default_popup":"bey.html"
 	// },
 	"permissions": [
-		"fileSystem",
+		{"fileSystem": ["write", "directory"]},
 		"unlimitedStorage",
 		"storage",
 		"https://www.google.com.hk/*",
-		"*://*.googleapis.com/*",
-		"*://*.baidu.com/*",
-		"*://*.kuaipan.cn/*",
+		"http://*.googleapis.com/*",
+		"https://*.googleapis.com/*",
+		"http://*.baidu.com/*",
+		"https://*.baidu.com/*",
+		"http://*.kuaipan.cn/*",
+		"https://*.kuaipan.cn/*",
 		"https://*.sina.com.cn/*",
+		"http://*.sina.com.cn/*",
 		"https://api.weipan.cn/*",
 		"http://7xjd7x.com1.z0.glb.clouddn.com/*"
 	]
