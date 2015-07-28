@@ -146,7 +146,7 @@ function sha1Calculator(j, file) {
 	return sha1Promise;
 }
 
-function calculateMd5AndSha1(	) {
+function calculateMd5AndSha1() {
 	var i;
 	var tempMd5Promise = [],
 		tempSha1Promise = [],
@@ -174,14 +174,14 @@ function onUploadHandler() {
 	uploadSelect.disable = true;
 	var file = uploadSelect.files[0];
 	compressionAndDivision(file, fragmentsList).then(function() {
-			console.log("compression completed,now calculate hash.");
-			calculateMd5AndSha1();
-		}).then(function() {
-			console.log("hash-computing completed,now upload.");
-			uploadManager();
-		}).then(function() {
-			console.log("upload completed");
-		});
+		console.log("compression completed,now calculate hash.");
+		calculateMd5AndSha1();
+	}).then(function() {
+		console.log("hash-computing completed,now upload.");
+		uploadManager();
+	}).then(function() {
+		console.log("upload completed");
+	});
 
 }
 
@@ -225,23 +225,26 @@ function uploadManager() {
 	var fragmentsListlength = fragmentsList.length;
 	var formAAjax = {
 		"xinlang": function(file, name) {
-			var url = "http://upload-vdisk.sina.com.cn/2/files/sandbox/testing728/";
-			var access_token = "9aeb056662WklwB2XjPlj4ctwDY05d5f";
-			var true_url = url + name + "?access_token=" + access_token;
+			console.log("xinlang", file, name);
+			var url = "http://upload-vdisk.sina.com.cn/2/files/sandbox/testing729_";
+			var access_token = "5f22cd6653lNba91f6c9fLtp7Kcd83d4";
+			url = url + encodeURIComponent(name) + "?access_token=" + access_token;
 			var formData = new FormData();
-			formData.append("file", file);
+			formData.append("file", file, name);
 			var uploadAjax = $.ajax({
 				url: url,
+				type: "POST",
 				contentType: false,
 				processData: false,
-				type: "POST",
-				contentType: "multipart/form-data",
+//				contentType: "multipart/form-data",
 				data: formData
 			});
+			console.log(uploadAjax);
 			return (uploadAjax);
 		},
 
 		"jinshan": function(file, name) {
+			console.log("jinshan", file, name);
 			var formData = new FormData();
 			formData.append("file", file, name);
 			var key;
@@ -254,7 +257,7 @@ function uploadManager() {
 				oauth_nonce: (Math.round(Math.random() * Math.pow(36, 10))).toString(36),
 				oauth_version: "1.0",
 				root: "app_folder",
-				path: "/testing728/" + name
+				path: "/testing729_" + name
 			};
 			params["oauth_signature"] = kuaipan_signature(url, params, "POST");
 			for (key in params) {
@@ -269,13 +272,14 @@ function uploadManager() {
 				contentType: "multipart/form-data",
 				data: formData
 			});
+			console.log(uploadAjax);
 			return (uploadAjax);
 		}
 	};
 	var uploadDeferred = $.Deferred();
 
 	function singleUploadRequest(item, serverUsing) {
-		// fragmentsList.push({
+		// fragmentsmList.push({
 		// 	fragment: blob.slice(start, end),
 		// 	filename: file.name + "." + (fileNum++),
 		// 	uploadedTimes: 0,

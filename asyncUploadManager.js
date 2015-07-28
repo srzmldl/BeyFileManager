@@ -16,8 +16,8 @@ var running = 0;
 var limit = 4;
 var count = 0;
 
-function asyncAjax(arg,i) {
-  filesUploadList[i].startTime= new data;
+function asyncAjax(arg, i) {
+  filesUploadList[i].startTime = new data;
   console.log('参数为 ' + arg);
   $.ajax({
     url: arg,
@@ -41,16 +41,16 @@ function final() {
   console.log("i=", i);
   console.log(results);
   //console.log("final time consuming:" + (new Date - start));
-  filesUploadList[i].timeConsuming= new Date - start
+  filesUploadList[i].timeConsuming = new Date - start
 }
 
 var i = 0;
 
-function uploadManagerForOnce(){
-  var i=0;
+function uploadManagerForOnce() {
+  var i = 0;
   while (++i && running < limit && items.length > 0) {
     var item = items.shift();
-    asyncAjax(item,i);
+    asyncAjax(item, i);
     running++;
   }
 }
@@ -84,3 +84,55 @@ for (j = 0; j < filesUploadList.length; j++) {
   item[i].originalMd5 = filesUploadList[i].originalMd5;
 }
 launcher();
+
+
+
+function uploadManager() {
+  var server = ["xinlang", "xinlang", "jinshan", "jinshan"]
+  var formAAjax = {
+    "xinlang": function(file, name) {
+      var url = "http://upload-vdisk.sina.com.cn/2/files/sandbox/testing728/";
+      var access_token = "9aeb056662WklwB2XjPlj4ctwDY05d5f";
+      var true_url = url + name + "?access_token=" + access_token;
+      var formData = new FormData();
+      formData.append("file", file);
+      var uploadAjax = $.ajax({
+        url: url,
+        type: "POST",
+      });
+      return (uploadAjax);
+    },
+
+    "jinshan": function(file, name) {
+      var formData = new FormData();
+      formData.append("file", file, name);
+      var key;
+      var url = "http://p5.dfs.kuaipan.cn:8080/cdlnode/1/fileops/upload_file?";
+      var params = {
+        oauth_consumer_key: 'xcBFwv9CJNIaUfO4',
+        oauth_token: '058560f25d3e696d5a00dc90',
+        oauth_signature_method: "HMAC-SHA1",
+        oauth_timestamp: Math.round(new Date() / 1000).toString(),
+        oauth_nonce: (Math.round(Math.random() * Math.pow(36, 10))).toString(36),
+        oauth_version: "1.0",
+        root: "app_folder",
+        path: "/testing728/" + name
+      };
+      params["oauth_signature"] = kuaipan_signature(url, params, "POST");
+      for (key in params) {
+        url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+      }
+      url = url.substring(0, url.length - 1);
+      var uploadAjax = $.ajax({
+        url: url,
+        contentType: false,
+        processData: false,
+        type: "POST",
+        contentType: "multipart/form-data",
+        data: formData
+      });
+      return (uploadAjax);
+    }
+  };
+
+}
