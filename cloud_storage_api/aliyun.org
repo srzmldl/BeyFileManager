@@ -1,0 +1,10 @@
+* 第一步：生成签名
+  －[[https://docs.aliyun.com/?spm=5176.383663.9.2.qtZkHI#/pub/oss/api-reference/access-control&signature-header][click here]]
+  －要点如下
+     + 链接中“Authorization字段计算的方法”大标题下的函数生成签名
+     + content-type和content-md5在请求中不是必须的
+     + access key 私聊
+
+* 第二步：操作object
+  - [[https://docs.aliyun.com/?spm=5176.383663.9.2.qtZkHI#/pub/oss/api-reference/object&PutObject][click here]]
+  - 看左侧大标题咯，上传，读取等
