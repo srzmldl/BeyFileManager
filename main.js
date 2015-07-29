@@ -1,15 +1,15 @@
 zip.workerScriptsPath = "/js/";
 
 function kuaipan_signature(url, params, method) {
-	var consumer_secret = 'BweeUfcIhh1hVgmx'
-	var oauth_token_secret = '7f27aa8a90bd494bad148411cfeaf254'
+	var consumer_secret = 'BweeUfcIhh1hVgmx';
+	var oauth_token_secret = '7f27aa8a90bd494bad148411cfeaf254';
 	var secret = consumer_secret + "&";
 	if ("oauth_token" in params)
 		secret += oauth_token_secret;
 	var base = method + "&" + encodeURIComponent(url) + "&";
 	var array = new Array();
 	for (key in params) {
-		array.push(key)
+		array.push(key);
 	}
 	array.sort();
 	var item = "";
@@ -27,8 +27,6 @@ function kuaipan_signature(url, params, method) {
 	var signature = window.btoa(hash_digest);
 	return signature;
 }
-
-
 
 function md5Calculator(j, file) {
 	var md5Promise = $.Deferred();
@@ -175,14 +173,15 @@ function onUploadHandler() {
 	var file = uploadSelect.files[0];
 	compressionAndDivision(file, fragmentsList).then(function() {
 		console.log("compression completed,now calculate hash.");
-		calculateMd5AndSha1();
+		console.log(fragmentsList);
+		return calculateMd5AndSha1();
 	}).then(function() {
 		console.log("hash-computing completed,now upload.");
-		uploadManager();
+		console.log(fragmentsList);
+		return uploadManager();
 	}).then(function() {
 		console.log("upload completed");
 	});
-
 }
 
 
@@ -236,10 +235,9 @@ function uploadManager() {
 				type: "POST",
 				contentType: false,
 				processData: false,
-//				contentType: "multipart/form-data",
+				//contentType: "multipart/form-data",
 				data: formData
 			});
-			console.log(uploadAjax);
 			return (uploadAjax);
 		},
 
@@ -248,7 +246,7 @@ function uploadManager() {
 			var formData = new FormData();
 			formData.append("file", file, name);
 			var key;
-			var url = "http://p5.dfs.kuaipan.cn:8080/cdlnode/1/fileops/upload_file?";
+			var url = "http://p5.dfs.kuaipan.cn:8080/cdlnode/1/fileops/upload_file";
 			var params = {
 				oauth_consumer_key: 'xcBFwv9CJNIaUfO4',
 				oauth_token: '058560f25d3e696d5a00dc90',
@@ -256,30 +254,30 @@ function uploadManager() {
 				oauth_timestamp: Math.round(new Date() / 1000).toString(),
 				oauth_nonce: (Math.round(Math.random() * Math.pow(36, 10))).toString(36),
 				oauth_version: "1.0",
+				overwrite: true,
 				root: "app_folder",
 				path: "/testing729_" + name
 			};
 			params["oauth_signature"] = kuaipan_signature(url, params, "POST");
+			url += "?";
 			for (key in params) {
 				url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
 			}
 			url = url.substring(0, url.length - 1);
 			var uploadAjax = $.ajax({
 				url: url,
+				type: "POST",
 				contentType: false,
 				processData: false,
-				type: "POST",
-				contentType: "multipart/form-data",
 				data: formData
 			});
-			console.log(uploadAjax);
 			return (uploadAjax);
 		}
 	};
 	var uploadDeferred = $.Deferred();
 
 	function singleUploadRequest(item, serverUsing) {
-		// fragmentsmList.push({
+		// fragmentsList.push({
 		// 	fragment: blob.slice(start, end),
 		// 	filename: file.name + "." + (fileNum++),
 		// 	uploadedTimes: 0,
@@ -291,6 +289,13 @@ function uploadManager() {
 			item.uploadedTimes++;
 			item.uploadedServer.push(serverUsing);
 			fragmentsFinishedList.push(item);
+			console.log(a, b, c);
+			running--;
+			server.push(serverUsing);
+			uploadOnce();
+			return;
+		},function(a, b, c) {
+			fragmentsList.push(item);
 			console.log(a, b, c);
 			running--;
 			server.push(serverUsing);
