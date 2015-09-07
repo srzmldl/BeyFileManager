@@ -673,7 +673,7 @@ function uploadManager(fragList) {
 		// 	md5: "",
 		// 	sha1: ""
 		// }
-		var promise = sendUlAjax[serverUsing](item.fragment, item.filename);
+		var promise = sendUlAjax[serverUsing](item.content, item.filename);
 		promise.then(function(a, b, c) {
 			item.uploadedTimes++;
 			item.uploadedServer.push({
@@ -714,7 +714,7 @@ function uploadManager(fragList) {
 			running++;
 		}
 		if (fragList.length === 0 & fragDoneList.length === fragAmount) {
-			ulOnceDeferred.resolve();
+			ulOnceDeferred.resolve(fragDoneList);
 		}
 	}
 
@@ -729,7 +729,6 @@ function onUploadHandler() {
 	var file = uploadSelect.files[0];
 	var originalFileSha1, originalFileMd5;
 	var fragList=[];
-	var fragFinishedList;
 	var beginTime,endTime,totalTime,speed;
 	if (file === undefined) {
 		alert("you are not selecting a file!");
@@ -757,10 +756,10 @@ function onUploadHandler() {
 		console.log(fragList);
 		beginTime=new Date().getTime();
 		return uploadManager(fragList);
-	}).then(function() {
+	}).then(function(fragDoneList) {
 		endTime=new Date().getTime();
 		totalTime=(endTime-beginTime)/1000;
-		speed=2048*totalFragNum/totalTime;
+		speed=file.size/totalTime/1024;
 		console.log("upload completed");
 		$("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
 		$("#textConsoleDiv").append("<p>upload complete,now begin to upload message to lys server.</p>");
