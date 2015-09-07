@@ -6,6 +6,6 @@
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('bey.html', {
     id: 'main',
-    bounds: { width: 1024, height: 768 }
+    bounds: { width: 1024, height: 1024 }
   });
 });

@@ -1,19 +1,16 @@
-<!DOCTYPE html>
 <html>
 <head>
 	<title>BeY Filemanager</title>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
 	<script type="text/javascript" src="./js/jquery-2.1.4.min.js"></script>
 	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="./js/inflate.js"></script>
-	<script type="text/javascript" src="./js/deflate.js"></script>
 	<script type="text/javascript" src="./js/zip.js"></script>
 	<script type="text/javascript" src="/js/CryptoJS v3.1.2/rollups/hmac-sha1.js"></script>
 	<script type="text/javascript" src="/js/CryptoJS v3.1.2/components/enc-base64.js"></script>
-
+	<style type="text/css">html{overflow:scroll}</style>
 </head>
 <body>
-	<div class="container">
+	<div class="container" >
 		<div class="header clearfix">
 			<nav>
 				<ul class="nav pull-right">
@@ -23,16 +20,45 @@
 			</nav>
 			<h2 class="text-muted">BeY FileManager</h2>
 		</div>
-		<div class="jumbotron">
-			<h1>Uploading Files</h1>
+
+		<div class="container" id="loginDiv">
+			<form class="form-signin">
+				<h2 class="form-signin-heading">Please sign in</h2>
+
+				<label for="inputName" class="sr-only">Name</label>
+				<input type="text" id="inputName" class="form-control" placeholder="Your Name(Should longer than 3 characters)." required="" autofocus=""> 
+
+				<label for="inputPassword" class="sr-only">Password</label>
+				<input type="password" id="inputPassword" class="form-control" placeholder="Password(Should longer than 6 characters)." required="">
+
+				<div class="checkbox">
+					<label>
+					<input type="radio" name="choose" value="Register">Register<br />
+					<input type="radio" name="choose" value="Login" checked>Log in<br />
+				</div>
+				<button class="btn btn-lg btn-primary btn-block" type="submit" id="loginSubmit">Submit</button>
+	  		</form>
+		</div> <!-- /container -->
+
+		<div class="jumbotron" id="uploadDiv" hidden>
+			<h2>Uploading Files</h2>
 			<form>
 				<div><input type="file" id="uploadSelect"></input></div>
 				<button type="button" class="btn btn-success" id="uploadClick">click here to submit</button>
 			</form>
 		</div>
+
 		<hr />
-		<div class="jumbotron">
-			<h1>Text Console</h1>
+		<div class="jumbotron" id="downloadDiv" hidden>
+			<h2>Downloading Files</h2>
+			<ul id="fileIndex">
+				<li>..</li>
+			</ul>
+		</div>
+
+		<hr />
+		<div class="jumbotron" id="textConsoleDiv">
+			<h2 hidden>Text Console</h2>
 			<p id="textConsole">here is the text console</p>
 		</div>
 	</div>
