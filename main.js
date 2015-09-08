@@ -41,7 +41,7 @@ var initial = {
 		oauth_token_secret: "810c09dc238d4f25aa4f8a24cbf9ab1e"
 	},
 	xinlang: {
-		access_token: "69ef816662WklwB2XjPlj4ctwDY8172b"
+		access_token: "01336d6662WklwB2XjPlj4ctwDY6dc89"
 	},
 	lys_url: "http://222.195.92.170:3000",
 	uploadServer: ["xinlang", "jinshan", "xinlang", "jinshan"],//上传用到的那个服务器列表
@@ -450,9 +450,9 @@ var tool = {
 				finalUplaodInfo.frag_arr[j] = {};
 				finalUplaodInfo.frag_arr[j].addr = finishedList[i].uploadedServer[k].addr;
 				finalUplaodInfo.frag_arr[j].server_name = finishedList[i].uploadedServer[k].panname;
-				finalUplaodInfo.frag_arr[j].index = finishedList[i].fileNum;
-				finalUplaodInfo.frag_arr[j].sha1 = finishedList[i].originalSha1;
-				finalUplaodInfo.frag_arr[j].md5 = finishedList[i].originalMd5;
+				finalUplaodInfo.frag_arr[j].index = finishedList[i].index;
+				finalUplaodInfo.frag_arr[j].sha1 = finishedList[i].sha1;
+				finalUplaodInfo.frag_arr[j].md5 = finishedList[i].md5;
 				j++;
 			}
 		}
@@ -764,6 +764,7 @@ function onUploadHandler() {
 		$("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
 		$("#textConsoleDiv").append("<p>upload complete,now begin to upload message to lys server.</p>");
 		console.log("now begin to upload message to lys server");
+		console.log(fragDoneList);
 		return (tool.upFragListToLysUpList(authen_token, fragDoneList, loginName, file.name, originalFileMd5, originalFileSha1));
 	}).then(function(finalUplaodInfo) {
 		return (lys.virfiles_create(finalUplaodInfo));
@@ -779,10 +780,10 @@ var sendDlAjax = {
 		var url = "https://api.weipan.cn/2/files/sandbox/";
 		var access_token = initial.xinlang.access_token;
 		url = url + encodeURI(addr) + "?access_token=" + access_token;
-		var uploadAjax = new XMLHttpRequest();
-		uploadAjax.open("GET", url, true);
-		uploadAjax.responseType = 'blob';
-		uploadAjax.onload = function(event) {
+		var downloadAjax = new XMLHttpRequest();
+		downloadAjax.open("GET", url, true);
+		downloadAjax.responseType = 'blob';
+		downloadAjax.onload = function(event) {
 			if (event.target.status == 200) {
 				ajaxDeferred.resolve(event.target);
 			} else {
@@ -791,12 +792,12 @@ var sendDlAjax = {
 			console.log("loaded");
 			console.log(event.target);
 		};
-		uploadAjax.onerror = function(event) {
+		downloadAjax.onerror = function(event) {
 			console.log("error");
 			console.log(event.target);
 			ajaxDeferred.reject(event.target);
 		};
-		uploadAjax.send();
+		downloadAjax.send();
 		return ajaxDeferred;
 	},
 	"jinshan": function(addr) {
@@ -818,10 +819,10 @@ var sendDlAjax = {
 			url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
 		}
 		url = url.substring(0, url.length - 1);
-		var uploadAjax = new XMLHttpRequest();
-		uploadAjax.open("GET", url, true);
-		uploadAjax.responseType = 'blob';
-		uploadAjax.onload = function(event) {
+		var downloadAjax = new XMLHttpRequest();
+		downloadAjax.open("GET", url, true);
+		downloadAjax.responseType = 'blob';
+		downloadAjax.onload = function(event) {
 			if (event.target.status == 200) {
 				ajaxDeferred.resolve(event.target);
 			} else {
@@ -830,12 +831,12 @@ var sendDlAjax = {
 			console.log("loaded");
 			console.log(event.target);
 		};
-		uploadAjax.onerror = function(event) {
+		downloadAjax.onerror = function(event) {
 			console.log("error");
 			console.log(event.target);
 			ajaxDeferred.reject(event.target);
 		};
-		uploadAjax.send();
+		downloadAjax.send();
 		return ajaxDeferred;
 	}
 } //发一个下载请求，dl=download
@@ -843,6 +844,8 @@ var sendDlAjax = {
 
 function ondownloadHandler(event) {
 	var targetFile = event.data.name;//请在本文中搜索event.data能搜到是哪里传给这里的
+	console.log("target file");
+	console.log(targetFile);
 	var deferred;
 	var feedbackList;
 	var originalFilename = event.data.name;
@@ -850,7 +853,9 @@ function ondownloadHandler(event) {
 	var originalFileSha1;
 	var fileList;
 	var beginTime,endTime,totalTime,speed;
-	deferred = virfiles_show(loginName, targetFile, authen_token);
+	var deferred = new $.Deferred();
+	var downloadDeferred = new $.Deferred();
+	deferred = lys.virfiles_show(loginName, targetFile, authen_token);
 	deferred.then(function(xhr) {
 		feedbackList = JSON.parse(xhr.response);
 		originalFileMd5 = feedbackList.file_md5;
@@ -858,7 +863,43 @@ function ondownloadHandler(event) {
 		fileList = tool.lysDownFragListToDownFragList(feedbackList);
 		$("#textConsoleDiv").append("<p>download begins.</p>");
 		beginTime=new Date().getTime();
-	}).then(downloadAllFrag);//先去下frag的list
+	}).then(downloadAllFrag).then(function() {
+		var decompressiondeferred = new $.Deferred();
+		blob = new Blob(blobList);
+		var unzipblob;
+		endTime=new Date().getTime();
+		totalTime=(endTime-beginTime)/1000;
+		speed=blob.size/totalTime;
+		$("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
+		$("#textConsoleDiv").append("<p>download completed,now decompression.</p>");
+		
+		zip.createReader(new zip.BlobReader(blob), function(reader) {
+			reader.getEntries(function(entries) {
+				if (entries.length) {
+					entries[0].getData(new zip.BlobWriter(), function(newblob) {
+						unzipblob = newblob;
+						// close the zip reader
+						reader.close(function() {
+							// onclose callback
+							decompressiondeferred.resolve(unzipblob);
+						});
+					}, function(current, total) {
+						// onprogress callback
+					});
+				}
+			});
+		}, function(error) {
+			// onerror callback
+		});
+		return decompressiondeferred;
+	}).then(function(unzipblob) {
+		//here is the hash comparison and the decompression
+		var a = document.createElement("a");
+		a.href = window.URL.createObjectURL(unzipblob);
+		a.download = originalFilename;
+		a.textContent = "Download " + originalFilename;
+		$("#textConsoleDiv").append($("<p></p>").append(a));
+	});
 
 	var blobList = [];
 	var blob;
@@ -873,7 +914,7 @@ function ondownloadHandler(event) {
 		}
 	};
 	var sharedList = [];
-	var deferred = new $.Deferred();
+
 
 	function downloadAllFrag() { //only initial all the server ajax requests
 		var i;
@@ -902,6 +943,7 @@ function ondownloadHandler(event) {
 				}
 			}
 		}
+		return downloadDeferred;
 	}
 
 	function isServerUsingInSharedList(serverUsiag) {
@@ -917,6 +959,7 @@ function ondownloadHandler(event) {
 	}
 
 	function continueDownloading(serverUsing) {
+		console.log("here is two");
 		var i, j, k, temp;
 		if (serverUsing !== undefined) {
 			downloadSingleFragment(server[serverUsing]["onlyList"].shift(), serverUsing);
@@ -970,8 +1013,9 @@ function ondownloadHandler(event) {
 			return;
 		}
 		server[serverUsing]["avail"]--;
-		var ajaxDeferred = formAAjax[serverUsing](fileListItem.server[i].addr);
+		var ajaxDeferred = sendDlAjax[serverUsing](fileListItem.server[i].addr);
 		ajaxDeferred.then(function(xhr) {
+			console.log("here is one");
 			server[serverUsing]["avail"]++;
 			fileListItem.downloadStatus = 1;
 			blobList[fileListItem["index"]] = xhr.response;
@@ -980,7 +1024,8 @@ function ondownloadHandler(event) {
 			} else if (sharedList.length > 0) {
 				continueDownloading(undefined);
 			} else if (isAllFinished()) {
-				deferred.resolve();
+				downloadDeferred.resolve();
+				console.log("here is three");
 			} else {
 				return;
 			}
@@ -1000,41 +1045,4 @@ function ondownloadHandler(event) {
 			}
 		})
 	}
-
-	deferred.then(function() {
-		endTime=new Date().getTime();
-		totalTime=(endTime-beginTime)/1000;
-		speed=2048*totalFragNum/totalTime;
-		$("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
-		$("#textConsoleDiv").append("<p>download completed,now decompression.</p>");
-		var decompressiondeferred = new $.Deferred();
-		blob = new Blob(blobList);
-		var unzipblob;
-		zip.createReader(new zip.BlobReader(blob), function(reader) {
-			reader.getEntries(function(entries) {
-				if (entries.length) {
-					entries[0].getData(new zip.BlobWriter(), function(newblob) {
-						unzipblob = newblob;
-						// close the zip reader
-						reader.close(function() {
-							// onclose callback
-							decompressiondeferred.resolve(unzipblob);
-						});
-					}, function(current, total) {
-						// onprogress callback
-					});
-				}
-			});
-		}, function(error) {
-			// onerror callback
-		});
-		return decompressiondeferred;
-	}).then(function(unzipblob) {
-		//here is the hash comparison and the decompression
-		var a = document.createElement("a");
-		a.href = window.URL.createObjectURL(unzipblob);
-		a.download = originalFilename;
-		a.textContent = "Download " + originalFilename;
-		$("#textConsoleDiv").append($("<p></p>").append(a));
-	});
 }
