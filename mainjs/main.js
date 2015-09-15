@@ -226,14 +226,14 @@ function loginHandler(event) {
     deferred = user_current.handle_login_form();
     deferred.then(
         getDownloadableList()
-    )    
+    );
 } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性
 
 function getDownloadableList() {
 	var deferred = ownServer.virfiles_index(loginName, "", authen_token);
 	deferred.then(function(xhr) {
 		downloadableList = JSON.parse(xhr.response);
-	}).then(showDownloadableList)
+	}).then(showDownloadableList);
 } //去lsy服务器获取downloadable list，现在只是根目录，理论上应该做成递归的函数，访问所有的子文件夹
 
 function showDownloadableList() {
