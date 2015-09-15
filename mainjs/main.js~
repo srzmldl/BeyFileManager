@@ -1,7 +1,7 @@
 /*
 *看函数之前请先把所有函数都折叠起来
-*所有之前在server communication里面的函数都放在了lys里面了，
-*函数名字没变，调用时在最前面加上"lys."就好
+*所有之前在server communication里面的函数都放在了ownServer里面了，
+*函数名字没变，调用时在最前面加上"ownServer."就好
 *initial包括了一些常量的设置，可以在这里改，为了方便修改而放在文件最开头的
 *tool里面的函数是一个快盘的签名，两个算hash值的，两个转换list的函数，名字被我缩短了一下
 *其余的函数的作用在把代码块折叠起来，最后的那个"}"后面的注释里，
@@ -27,7 +27,7 @@
 然后每次查长度就要查server的列表的长度（看是不是只有一个服务器有这个文件的碎片）
 每次查某个服务器是否在server里面就要遍历server列表（因为发送一个download请求是要根据不同的name来调用不同的函数的）
 */
-// lys服务器测试api：get initial.lys_url+/api/v1/hello
+// ownServer服务器测试api：get initial.ownServer_url+/api/v1/hello
 zip.workerScriptsPath = "/js/";
 document.getElementById("uploadClick").addEventListener('click', onUploadHandler, false);
 document.getElementById("loginSubmit").addEventListener('click', loginHandler, false);
@@ -43,7 +43,6 @@ var initial = {
 	xinlang: {
 		access_token: "01336d6662WklwB2XjPlj4ctwDY6dc89"
 	},
-	lys_url: "http://222.195.92.170:3000",
 	uploadServer: ["xinlang", "jinshan", "xinlang", "jinshan"],//上传用到的那个服务器列表
 	BYTES_PER_CHUNK: 2 * 1024 * 1024 //每一个文件碎片大小的设置
 }
@@ -51,220 +50,7 @@ var initial = {
 var loginName;
 var authen_token;
 var downloadableList;
-var lys = {
-	user_show: function(name, authen_token) {
-		// show the profile by token and user_name after verify.
-		// 400 for error name & 403 for error token
-		var url = initial.lys_url+"/api/v1/users/profile";
-		var params = {
-			"show_user": {
-				"name": "",
-				"authen_token": ""
-			}
-		};
-		params.show_user.name = name;
-		params.show_user.authen_token = authen_token;
-		var deferred = new $.Deferred();
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			deferred.resolve(event.target);
-		}
-		xhr.send(formData);
-		return deferred;
-	},
 
-	user_register: function(name, password) {
-		//- register a new user
-		//  * Meaning of state:
-		//    + -1  |name| < 3
-		//    + -2  |password| < 6
-		//    + -3 user already exist.
-		//    + 0 no error
-		var url = initial.lys_url+"/api/v1/users";
-		var params = {
-			"register_user": {
-				"name": "",
-				"password": ""
-			}
-		};
-		params.register_user.name = name;
-		params.register_user.password = password;
-		var deferred = new $.Deferred();
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			if (event.target.status == 200) {
-				deferred.resolve(JSON.parse(event.target.response));
-			} else {
-				deferred.reject(e.status + " : " + e.statusText);
-			}
-		}
-		xhr.send(formData);
-		return deferred;
-	},
-
-	user_login: function(name, password) {
-		//- login and get user information & token
-		//- 401 error if login fail
-		var url = initial.lys_url+"/api/v1/sessions";
-		var params = {
-			"user": {
-				"name": "",
-				"password": ""
-			}
-		};
-		params.user.name = name;
-		params.user.password = password;
-		var deferred = new $.Deferred();
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			deferred.resolve(event.target);
-		}
-		xhr.send(formData);
-		return deferred;
-	},
-
-	virfiles_index: function(user_name, path, authen_token) {
-		//- list files and directory in :path of :user_name
-		// if path is root, path = ""
-		var deferred = new $.Deferred();
-		var url = initial.lys_url+"/api/v1/virfiles/index";
-		var params = {
-			"abs_path": {
-				"user_name": "",
-				"path": ""
-			},
-			"authen_token": ""
-		};
-		params.abs_path.user_name = user_name;
-		params.abs_path.path = path;
-		params.authen_token = authen_token;
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			deferred.resolve(event.target);
-		}
-		xhr.send(formData);
-		return deferred;
-	},
-
-	virfiles_create: function(params) {
-		var url = initial.lys_url+"/api/v1/virfiles";
-		//params e.g. 
-
-		//1. file
-		/*{
-			"abs_path": {
-				"user_name": "test00",
-				"path": ""
-			},
-			"file_inf": {
-				"name": "ff2",
-				"frag_num": 2,
-				"if_file": true,
-				"file_sha1": "123",
-				"file_md5": "123"
-			},
-			"frag_arr": [{
-				"addr": "www/baidu/com",
-				"index": 1,
-				"sha1": "123",
-				"md5": "123",
-				"server_name": "xinlang"
-			}, {
-				"addr": "www.google.com",
-				"index": 2,
-				"sha1": "123",
-				"md5": "123",
-				"server_name": "xinlang"
-			}],
-			"authen_token": "Q0ksIastifLXxNU4aAzh/o09RWzy1lVESvcTHYdLaIfWywUW5PtbeikEoPVO2+z5GzJpCUSxqudEfCtTulRWYg=="
-		}*/
-
-		//2. dictionary
-		/*{
-			"abs_path": {
-				"user_name": "test00",
-				"path": ""
-			},
-			"file_inf": {
-				"name": "firstd1",
-				"frag_num": 0,
-				"if_file": false
-			},
-			"authen_token": "50z7tPyBiKomBRd5i5iTdMG4QKZlZ3cT0qgVQWRoq49bwj52nW4dvhd0zJ4xbVT587Qx6mGOAUiBbzA8RNh67w=="
-		}*/
-		var deferred = new $.Deferred();
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			deferred.resolve(event.target);
-		}
-		xhr.send(formData);
-		return deferred;
-	},
-
-	virfiles_show: function(user_name, path, authen_token) {
-		//- show all the frag of :path
-		var url = initial.lys_url+"/api/v1/virfiles/show"
-		var params = {
-			"abs_path": {
-				"user_name": "",
-				"path": ""
-			},
-			"authen_token": ""
-		};
-		params.abs_path.user_name = user_name;
-		params.abs_path.path = path;
-		params.authen_token = authen_token;
-		var deferred = new $.Deferred();
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			deferred.resolve(event.target);
-		}
-		xhr.send(formData);
-		return deferred;
-	},
-
-	virfiles_delete: function(user_name, path, authen_token) {
-		//- delete :path of :user_name
-		var url = initial.lys_url+"/api/v1/virfiles/delete"
-		var params = {
-			"abs_path": {
-				"user_name": "",
-				"path": ""
-			},
-			"authen_token": ""
-		};
-		params.abs_path.user_name = user_name;
-		params.abs_path.path = path;
-		params.authen_token = authen_token;
-		var xhr = new XMLHttpRequest();
-		xhr.open("DELETE", url, true);
-		xhr.setRequestHeader("Content-Type", "application/json");
-		var formData = JSON.stringify(params);
-		xhr.onload = function(event) {
-			deferred.resolve(event.target);
-		}
-		xhr.send(formData);
-		return deferred;
-	}
-}
 
 var tool = {
 	kuaipan_signature: function(url, params, method) {
@@ -411,7 +197,7 @@ var tool = {
 		}
 		return sha1Deferred;
 	},
-	lysDownFragListToDownFragList: function(feedbackList) {
+	ownServerDownFragListToDownFragList: function(feedbackList) {
 		var fileList = [];
 		var i, fragIndex, newServer;
 		for (i = 0; i < feedbackList.frag_num; i++) {
@@ -429,8 +215,8 @@ var tool = {
 			fileList[fragIndex].server.push(newServer);
 		}
 		return fileList;
-	}, //从lys服务器返回来的to用于下载的所有frag的地址的list
-	upFragListToLysUpList: function(authen_token, finishedList, userName, fileName, originalFileMd5, originalFileSha1) {
+	}, //从ownServer服务器返回来的to用于下载的所有frag的地址的list
+	upFragListToOwnServerUpList: function(authen_token, finishedList, userName, fileName, originalFileMd5, originalFileSha1) {
 		var finalUplaodInfo = {};
 		finalUplaodInfo.abs_path = {};
 		finalUplaodInfo.abs_path.user_name = userName;
@@ -458,7 +244,7 @@ var tool = {
 		}
 		finalUplaodInfo.authen_token = authen_token;
 		return finalUplaodInfo;
-	}//上传成功后的list to 用于传给lys服务器的list
+	}//上传成功后的list to 用于传给ownServer服务器的list
 }
 
 function loginHandler(event) {
@@ -484,7 +270,7 @@ function loginHandler(event) {
 	}
 
 	if (ifRegister) {
-		deferred = lys.user_register(loginName, password);
+		deferred = ownServer.user_register(loginName, password);
 		deferred.then(function(xhr) {
 			if (xhr.state == 0) {
 				authen_token = xhr.user.authen_token;
@@ -505,7 +291,7 @@ function loginHandler(event) {
 			$("#textConsole")[0].innerHTML = "Connection failed!<br/>Try again!";
 		});
 	} else {
-		deferred = lys.user_login(loginName, password);
+		deferred = ownServer.user_login(loginName, password);
 		deferred.then(function(xhr) {
 			if (xhr.status == 401) {
 				$("#textConsole")[0].innerHTML = "login failed! try again!"
@@ -521,7 +307,7 @@ function loginHandler(event) {
 } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性
 
 function getDownloadableList() {
-	var deferred = lys.virfiles_index(loginName, "", authen_token);
+	var deferred = ownServer.virfiles_index(loginName, "", authen_token);
 	deferred.then(function(xhr) {
 		downloadableList = JSON.parse(xhr.response);
 	}).then(showDownloadableList)
@@ -656,6 +442,7 @@ var sendUlAjax = {
 }//发一个上传的ajax请求，ul=upload，返回的是deferred对象
 
 function uploadManager(fragList) {
+        
 	var server = initial.uploadServer.concat();
 	var running = 0;
 	var errorTimes = 0;
@@ -762,12 +549,12 @@ function onUploadHandler() {
 		speed=file.size/totalTime/1024;
 		console.log("upload completed");
 		$("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
-		$("#textConsoleDiv").append("<p>upload complete,now begin to upload message to lys server.</p>");
-		console.log("now begin to upload message to lys server");
+		$("#textConsoleDiv").append("<p>upload complete,now begin to upload message to ownServer server.</p>");
+		console.log("now begin to upload message to ownServer server");
 		console.log(fragDoneList);
-		return (tool.upFragListToLysUpList(authen_token, fragDoneList, loginName, file.name, originalFileMd5, originalFileSha1));
+		return (tool.upFragListToOwnServerUpList(authen_token, fragDoneList, loginName, file.name, originalFileMd5, originalFileSha1));
 	}).then(function(finalUplaodInfo) {
-		return (lys.virfiles_create(finalUplaodInfo));
+		return (ownServer.virfiles_create(finalUplaodInfo));
 	}).then(function(xhr) {
 		console.log(xhr);
 		$("#textConsoleDiv").append("<p>upload finished.</p>");
@@ -855,12 +642,12 @@ function ondownloadHandler(event) {
 	var beginTime,endTime,totalTime,speed;
 	var deferred = new $.Deferred();
 	var downloadDeferred = new $.Deferred();
-	deferred = lys.virfiles_show(loginName, targetFile, authen_token);
+	deferred = ownServer.virfiles_show(loginName, targetFile, authen_token);
 	deferred.then(function(xhr) {
 		feedbackList = JSON.parse(xhr.response);
 		originalFileMd5 = feedbackList.file_md5;
 		originalFileSha1 = feedbackList.file_sha1;
-		fileList = tool.lysDownFragListToDownFragList(feedbackList);
+		fileList = tool.ownServerDownFragListToDownFragList(feedbackList);
 		$("#textConsoleDiv").append("<p>download begins.</p>");
 		beginTime=new Date().getTime();
 	}).then(downloadAllFrag).then(function() {
