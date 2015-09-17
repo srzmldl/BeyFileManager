@@ -1,6 +1,6 @@
 var User = function(){
     this.authen_token = "";
-    this.name = "";
+    this.user_name = "";
         
     this.register = function(loginName, password) {
         var deferred = new $.Deferred();
@@ -9,12 +9,12 @@ var User = function(){
         deferred = ownServer.user_register(loginName, password);
 	    deferred.then(function(xhr) {
 		    if (xhr.state == 0) {
-                that.name = loginName;
+                that.user_name = loginName;
 	            that.authen_token = xhr.user.authen_token;
 			    $("#loginDiv").hide();
 			    $("#uploadDiv").show();
 		        $("#downloadDiv").show();
-                ownDefer.solve();
+                ownDefer.resolve();
 		    } else {
                 
                 if (xhr.state == -1) {
@@ -45,11 +45,11 @@ var User = function(){
         deferred.then(
             function(xhr) {
                 if (xhr.status == 401) {
-                $("#textConsole")[0].innerHTML = "login failed! try again!";
-                ownDefer.reject();
+                    $("#textConsole")[0].innerHTML = "login failed! try again!";
+                    ownDefer.reject();
 		        } else {
                     that.authen_token = JSON.parse(xhr.response).user.authen_token;
-                    that.name = loginName;
+                    that.user_name = loginName;
 			        $("#loginDiv").hide();
 			        $("#uploadDiv").show();
 		            $("#downloadDiv").show();
