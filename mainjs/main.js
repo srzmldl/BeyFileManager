@@ -226,56 +226,6 @@ function loginHandler(event) {
     );
     } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性
         
-function onUploadHandler() {
-	var uploadSelect = document.getElementById("uploadSelect");
-	uploadSelect.disable = true;
-	var file = uploadSelect.files[0];
-	var originalFileSha1, originalFileMd5;
-	var fragList=[];
-	var beginTime,endTime,totalTime,speed;
-	if (file === undefined) {
-		alert("you are not selecting a file!");
-		return;
-	}
-	$("#textConsoleDiv").append("<p>Task accepted.Now begin compression.</p>");
-	tool.md5Calculator(file).then(function(md5) {
-		originalFileMd5 = md5;
-		return;
-	}).then(function() {
-		return tool.sha1Calculator(file);
-	}).then(function(sha1) {
-		originalFileSha1 = sha1;
-		return;
-	}).then(function() {
-		return compressionAndDivision(file, fragList);
-	}).then(function(fragList) {
-		console.log("compression completed,now calculate hash.");
-		$("#textConsoleDiv").append("<p>compression completed,now calculate hash.</p>");
-		console.log(fragList);
-		return calMd5AndSha1(fragList);
-	}).then(function(fragList) {
-		console.log("hash-computing completed,now upload.");
-		$("#textConsoleDiv").append("<p>hash-computing completed,now upload.</p>");
-		console.log(fragList);
-		beginTime=new Date().getTime();
-		return uploadManager(fragList);
-	}).then(function(fragDoneList) {
-		endTime=new Date().getTime();
-		totalTime=(endTime-beginTime)/1000;
-		speed=file.size/totalTime/1024;
-		console.log("upload completed");
-		$("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
-		$("#textConsoleDiv").append("<p>upload complete,now begin to upload message to ownServer server.</p>");
-		console.log("now begin to upload message to ownServer server");
-		console.log(fragDoneList);
-		return (tool.upFragListToOwnServerUpList(authen_token, fragDoneList, loginName, file.name, originalFileMd5, originalFileSha1));
-	}).then(function(finalUplaodInfo) {
-		return (ownServer.virfiles_create(finalUplaodInfo));
-	}).then(function(xhr) {
-		console.log(xhr);
-		$("#textConsoleDiv").append("<p>upload finished.</p>");
-	}).then(getDownloadableList);
-} //待完成：上传时链接频繁出错的时候要停止..
 
 function compressionAndDivision(file, fragList) {
 	var deferred = new $.Deferred();
@@ -386,74 +336,6 @@ var sendUlAjax = {
 	}
 }//发一个上传的ajax请求，ul=upload，返回的是deferred对象
 
-function uploadManager(fragList) {
-        
-	var server = initial.uploadServer.concat();
-	var running = 0;
-	var errorTimes = 0;
-	var fragAmount = fragList.length;
-	var fragDoneList = [];
-	var ulOnceDeferred = $.Deferred();
-
-	function singleUl(item, serverUsing) {
-		// item={
-		// 	index: fileNum,
-		// 	content: blob.slice(start, end),
-		// 	filename: file.name + "." + (fileNum++),
-		// 	uploadedTimes: 0,
-		// 	uploadedServer: [],
-		// 	md5: "",
-		// 	sha1: ""
-		// }
-		var promise = sendUlAjax[serverUsing](item.content, item.filename);
-		promise.then(function(a, b, c) {
-			item.uploadedTimes++;
-			item.uploadedServer.push({
-				panname: serverUsing,
-				addr: item.filename
-			});
-			fragDoneList.push(item);
-			console.log(a, b, c);
-			running--;
-			server.push(serverUsing);
-			ulOnce();
-			return;
-		}, function(a, b, c) {
-			fragList.push(item);
-			console.log(a, b, c);
-			running--;
-			errorTimes++;
-			if(errorTimes>3){
-				console.log("Error Times:"+errorTimes);
-				console.log("fragList",fragList);
-				console.log("fragDoneList",fragDoneList);
-				$("#textConsoleDiv").append("<p>Server Error.</p>");
-			}else{
-				server.push(serverUsing);
-				ulOnce();
-			}
-			return;
-		});
-	}
-
-	function ulOnce() {
-		var item;
-		var serverUsing;
-		while (server.length > 0 && fragList.length > 0) {
-			item = fragList.shift();
-			serverUsing = server.shift();
-			setTimeout(singleUl,1000,item, serverUsing);
-			running++;
-		}
-		if (fragList.length === 0 & fragDoneList.length === fragAmount) {
-			ulOnceDeferred.resolve(fragDoneList);
-		}
-	}
-
-	ulOnce();
-
-	return ulOnceDeferred;
-}//处理把所有文件碎片都上传一次
 
 var sendDlAjax = {
 	"xinlang": function(addr) {
