@@ -1,31 +1,6 @@
 var utils = {
-    kuaipan_signature: function (url, params, method) {
-        var consumer_secret = initial.jinshan.consumer_secret;
-        var oauth_token_secret = initial.jinshan.oauth_token_secret;
-        var secret = consumer_secret + "&";
-        if ("oauth_token" in params)
-            secret += oauth_token_secret;
-        var base = method + "&" + encodeURIComponent(url) + "&";
-        var array = new Array();
-        for (key in params) {
-            array.push(key);
-        }
-        array.sort();
-        var item = "";
-        for (i = 0, l = array.length; i < l; i++) {
-            item += encodeURIComponent(array[i]) + "=" + encodeURIComponent(params[array[i]]) + "&";
-        }
-        item = item.substring(0, item.length - 1);
-        base += encodeURIComponent(item);
-        var hash = CryptoJS.HmacSHA1(base, secret);
-        hash = hash.toString();
-        var hash_digest = "";
-        for (i = 0, l = hash.length; i < l; i += 2) {
-            hash_digest += String.fromCharCode(parseInt(hash[i] + hash[i + 1], 16));
-        }
-        var signature = window.btoa(hash_digest);
-        return signature;
-    },
+    
+    BYTES_PER_CHUNK: 2 * 1024 * 1024, //每一个文件碎片大小的设置
     md5Calculator: function (file) {
         var md5Deferred = $.Deferred();
         //	var file = $("#uploadSelect")[0].files[0];
@@ -178,7 +153,7 @@ var utils = {
                     var size = file.size;
                     var start = 0;
                     var fileNum = 0;
-                    var end = initial.BYTES_PER_CHUNK;
+                    var end = utils.BYTES_PER_CHUNK;
                     while (start < size) {
                         fragList.push({
                             index: fileNum,
@@ -190,7 +165,7 @@ var utils = {
                             sha1: ""
                         });
                         start = end;
-                        end = end + initial.BYTES_PER_CHUNK;
+                        end = end + utils.BYTES_PER_CHUNK;
                     }
                     ;
                     console.log("the file " + file.name + "'s Compression and division complete");
@@ -199,6 +174,54 @@ var utils = {
             }) //writer.add
         }) //zip.createWriter
         return deferred;
-    } //压缩和分块，待完成：压缩和分块处理时可以有进度（尤其是每一个文件碎片完成的时候）
+    }, //压缩和分块，待完成：压缩和分块处理时可以有进度（尤其是每一个文件碎片完成的时候）
+    
+	ownServerDownFragListToDownFragList: function(feedbackList) {
+		var fileList = [];
+		var i, fragIndex, newServer;
+		for (i = 0; i < feedbackList.frag_num; i++) {
+			fileList[i] = {};
+			fileList[i].server = [];
+			fileList[i].index = i;
+		}
+		for (i = 0; i < feedbackList.frag_list.length; i++) {
+			fragIndex = feedbackList.frag_list[i].index;
+			fileList[fragIndex].md5 = feedbackList.frag_list[i].md5;
+			fileList[fragIndex].sha1 = feedbackList.frag_list[i].sha1;
+			newServer = {};
+			newServer.panname = feedbackList.frag_list[i].server_name;
+			newServer.addr = feedbackList.frag_list[i].addr;
+			fileList[fragIndex].server.push(newServer);
+		}
+		return fileList;
+	}, //从ownServer服务器返回来的to用于下载的所有frag的地址的list
+	upFragListToOwnServerUpList: function(authen_token, finishedList, userName, fileName, originalFileMd5, originalFileSha1) {
+		var finalUplaodInfo = {};
+		finalUplaodInfo.abs_path = {};
+		finalUplaodInfo.abs_path.user_name = userName;
+		finalUplaodInfo.abs_path.path = "";
 
+		finalUplaodInfo.file_inf = {};
+		finalUplaodInfo.file_inf.name = fileName;
+		finalUplaodInfo.file_inf.frag_num = finishedList.length;
+		finalUplaodInfo.file_inf.if_file = true;
+		finalUplaodInfo.file_inf.file_sha1 = originalFileSha1;
+		finalUplaodInfo.file_inf.file_md5 = originalFileMd5;
+
+		finalUplaodInfo.frag_arr = [];
+		var i, j, k;
+		for (i = 0, j = 0; i < finishedList.length; i++) {
+			for (k = 0; k < finishedList[i].uploadedServer.length; k++) {
+				finalUplaodInfo.frag_arr[j] = {};
+				finalUplaodInfo.frag_arr[j].addr = finishedList[i].uploadedServer[k].addr;
+				finalUplaodInfo.frag_arr[j].server_name = finishedList[i].uploadedServer[k].panname;
+				finalUplaodInfo.frag_arr[j].index = finishedList[i].index;
+				finalUplaodInfo.frag_arr[j].sha1 = finishedList[i].sha1;
+				finalUplaodInfo.frag_arr[j].md5 = finishedList[i].md5;
+				j++;
+			}
+		}
+		finalUplaodInfo.authen_token = authen_token;
+		return finalUplaodInfo;
+	}//上传成功后的list to 用于传给ownServer服务器的list
 }

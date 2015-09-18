@@ -1,6 +1,6 @@
 var ownServer = {
     
-    url_base  : "http://222.195.92.170:3000" ,
+    url_base  : "http://localhost:3000" ,
 	user_show :  function(name, authen_token) {
 		// show the profile by token and user_name after verify.
 		// 400 for error name & 403 for error token

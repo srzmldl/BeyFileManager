@@ -1,0 +1,69 @@
+* files and directories
+| name          | description                     |
+|---------------+---------------------------------|
+| readme.org    | this file                       |
+| main.js       | main controller                 |
+| fileSystem.js | operations over filesystem      |
+| ownServer.js  | communicate with our own server |
+| user.js       | information of user             |
+| frag.js       | class for frags                 |
+| utils.js      | all the tools                   |
+| cloud/*       | all the cloud storage           |
+
+* introduction 
+** main.js
+   - loginHandler
+     + 功能: 捕捉用户登录或者注册动作,用户初始化,文件系统初始化
+     + 返回值: 无
+   - onUploadHandler
+     + 功能: 捕捉上传动作,调用文件系统create函数
+     + 返回值: 无
+*** uploadServerList
+  - 所有盘列表
+** cloud/*
+   请按照如下要求模拟封装网盘
+   - evaluateValue
+     + 为估值参数,每个碎片独立选择最小的.
+     + 规则:
+       * 新开始任务+1
+       * 任务结束-1
+       * 错误一次+5
+     + tips:
+       * 暂时采用这么简单的策略,有好的建议请再issue中提出
+       * xinlang和金山也要更改.
+   - sendUlAjax(file, name)
+     + 上传文件时file,名字时name
+     + 返回值: defer类型
+   - sendDlAjax(addr)
+     + 下载这个地址的文件
+     + 返回值defer类型
+** ownServer.js
+   - user_show
+   - user_register
+   - user_login
+   - virfiles_index
+   - virfiles_create
+   - virfiles_show
+   - virfiles_delete
+** user.js
+   - register
+   - login
+   - handle_login_form
+     + 描述:由main调用,再判断调用login或者register
+** TODO fileSystem.js
+   - init 
+     + 文件系统初始化
+   - create
+     + 描述: 创建文件
+   - getDownloadableList
+   - showDownloadableList
+   - uploadManager
+   - ondownloadHandler
+** utils.js
+  - md5Calculator
+  - sha1Calculator
+  - calMd5AndSha1
+  - compressionAndDivision
+  - ownServerDownFragListToDownFragList
+  - upFragListToOwnServerUpList
+** TODO frag.js

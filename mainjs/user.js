@@ -2,7 +2,7 @@ var User = function(){
     this.authen_token = "";
     this.user_name = "";
         
-        this.register = function(loginName, password) {
+    this.register = function(loginName, password) {
         var deferred = new $.Deferred();
         var ownDefer = new $.Deferred();
         var that = this;

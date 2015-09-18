@@ -3,7 +3,7 @@ var downloadableList;
 var fileSystem = {
     userName : "",
     authen_token : "",
-
+    evaluateValue: 0,
     init: function(name, token) {
     	fileSystem.userName = name;
     	fileSystem.authen_token = token;
@@ -49,7 +49,7 @@ var fileSystem = {
 		    $("#textConsoleDiv").append("<p>upload complete,now begin to upload message to ownServer server.</p>");
 		    console.log("now begin to upload message to ownServer server");
 		    console.log(fragDoneList);
-		    return (tool.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
+		    return (utils.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
 	    }).then(function(finalUplaodInfo) {
 		    return (ownServer.virfiles_create(finalUplaodInfo));
 	    }).then(function(xhr) {
@@ -85,7 +85,7 @@ var fileSystem = {
     
     uploadManager : function(fragList) {
         
-	    var server = initial.uploadServer.concat();
+	    var server = uploadServerList.concat();
 	    var running = 0;
 	    var errorTimes = 0;
 	    var fragAmount = fragList.length;
@@ -151,6 +151,7 @@ var fileSystem = {
 
 	    return ulOnceDeferred;
     },//处理把所有文件碎片都上传一次
+
     ondownloadHandler : function(event) {
 	    var targetFile = event.data.name;//请在本文中搜索event.data能搜到是哪里传给这里的
 	    console.log("target file");
@@ -168,7 +169,7 @@ var fileSystem = {
 		    feedbackList = JSON.parse(xhr.response);
 		    originalFileMd5 = feedbackList.file_md5;
 		    originalFileSha1 = feedbackList.file_sha1;
-		    fileList = tool.ownServerDownFragListToDownFragList(feedbackList);
+		    fileList = utils.ownServerDownFragListToDownFragList(feedbackList);
 		    $("#textConsoleDiv").append("<p>download begins.</p>");
 		    beginTime=new Date().getTime();
 	    }).then(downloadAllFrag).then(function() {
