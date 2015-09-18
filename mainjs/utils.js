@@ -149,13 +149,13 @@ var utils = {
             deferred;
 
         function calMd5AndStore(index) {
-            return (tool.md5Calculator(fragList[index].content).then(function (md5) {
+            return (utils.md5Calculator(fragList[index].content).then(function (md5) {
                 fragList[index]["md5"] = md5;
             }));
         }
 
         function calSha1AndStore(index) {
-            return (tool.md5Calculator(fragList[index].content).then(function (sha1) {
+            return (utils.md5Calculator(fragList[index].content).then(function (sha1) {
                 fragList[index]["sha1"] = sha1;
             }));
         }

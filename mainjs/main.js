@@ -18,7 +18,7 @@ var initial = {
 	BYTES_PER_CHUNK: 2 * 1024 * 1024 //每一个文件碎片大小的设置
 };
 
-var utils = {
+var tool = {
 	ownServerDownFragListToDownFragList: function(feedbackList) {
 		var fileList = [];
 		var i, fragIndex, newServer;
@@ -81,7 +81,7 @@ function loginHandler(event) {
         fileSystem.init(user_current.user_name, user_current.authen_token);}
     );
     } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性
-        
+
 
 
 
@@ -120,7 +120,7 @@ var sendUlAjax = {
 			root: "app_folder",
 			path: "" + name
 		};
-		params["oauth_signature"] = utils.kuaipan_signature(url, params, "POST");
+		params["oauth_signature"] = tool.kuaipan_signature(url, params, "POST");
 		url += "?";
 		for (key in params) {
 			url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
@@ -177,7 +177,7 @@ var sendDlAjax = {
 			root: "app_folder",
 			path: addr //the official demo is without a "/" at the very front of addr
 		};
-		params["oauth_signature"] = utils.kuaipan_signature(url, params, "GET");
+		params["oauth_signature"] = tool.kuaipan_signature(url, params, "GET");
 		url += "?";
 		for (key in params) {
 			url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
