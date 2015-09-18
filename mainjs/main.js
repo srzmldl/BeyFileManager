@@ -225,7 +225,13 @@ function loginHandler(event) {
         fileSystem.init(user_current.user_name, user_current.authen_token);}
     );
     } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性
-        
+
+function onUploadHandler()
+{
+    var uploadSelect = document.getElementById("uploadSelect");
+    uploadSelect.disable = true;
+    fileSystem.create(uploadSelect.files[0]);
+}
 
 function compressionAndDivision(file, fragList) {
 	var deferred = new $.Deferred();
@@ -335,7 +341,6 @@ var sendUlAjax = {
 		return (uploadAjax);
 	}
 }//发一个上传的ajax请求，ul=upload，返回的是deferred对象
-
 
 var sendDlAjax = {
 	"xinlang": function(addr) {

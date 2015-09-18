@@ -9,10 +9,8 @@ var fileSystem = {
     	fileSystem.authen_token = token;
         fileSystem.getDownloadableList();
     },
-    onUploadHandler : function() {
-	    var uploadSelect = document.getElementById("uploadSelect");
-	    uploadSelect.disable = true;
-	    var file = uploadSelect.files[0];
+
+    create : function(file) {
 	    var originalFileSha1, originalFileMd5;
 	    var fragList=[];
 	    var beginTime,endTime,totalTime,speed;
@@ -21,27 +19,27 @@ var fileSystem = {
 		    return;
 	    }
 	    $("#textConsoleDiv").append("<p>Task accepted.Now begin compression.</p>");
-	    tool.md5Calculator(file).then(function(md5) {
+	    utils.md5Calculator(file).then(function(md5) {
 		    originalFileMd5 = md5;
 		    return;
 	    }).then(function() {
-		    return tool.sha1Calculator(file);
+		    return utils.sha1Calculator(file);
 	    }).then(function(sha1) {
 		    originalFileSha1 = sha1;
 		    return;
 	    }).then(function() {
-		    return compressionAndDivision(file, fragList);
+	        return utils.compressionAndDivision(file, fragList);
 	    }).then(function(fragList) {
 		    console.log("compression completed,now calculate hash.");
 		    $("#textConsoleDiv").append("<p>compression completed,now calculate hash.</p>");
 		    console.log(fragList);
-		    return calMd5AndSha1(fragList);
+		    return utils.calMd5AndSha1(fragList);
 	    }).then(function(fragList) {
 		    console.log("hash-computing completed,now upload.");
 		    $("#textConsoleDiv").append("<p>hash-computing completed,now upload.</p>");
 		    console.log(fragList);
 		    beginTime=new Date().getTime();
-		    return uploadManager(fragList);
+		    return fileSystem.uploadManager(fragList);
 	    }).then(function(fragDoneList) {
 		    endTime=new Date().getTime();
 		    totalTime=(endTime-beginTime)/1000;
@@ -51,24 +49,22 @@ var fileSystem = {
 		    $("#textConsoleDiv").append("<p>upload complete,now begin to upload message to ownServer server.</p>");
 		    console.log("now begin to upload message to ownServer server");
 		    console.log(fragDoneList);
-		    return (tool.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
+		    return (utils.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
 	    }).then(function(finalUplaodInfo) {
 		    return (ownServer.virfiles_create(finalUplaodInfo));
 	    }).then(function(xhr) {
 		    console.log(xhr);
 		    $("#textConsoleDiv").append("<p>upload finished.</p>");
-	    }).then(getDownloadableList);
+	        }).then(fileSystem.getDownloadableList);
     }, //待完成：上传时链接频繁出错的时候要停止..
 
     getDownloadableList : function() {
-        var that = this;
-	    var deferred = ownServer.virfiles_index(that.userName, "", that.authen_token);
+	    var deferred = ownServer.virfiles_index(fileSystem.userName, "", fileSystem.authen_token);
 	    deferred.then(function(xhr) {
 		    downloadableList = JSON.parse(xhr.response);
-	    }).then(function() {that.showDownloadableList();});
+	    }).then(function() {fileSystem.showDownloadableList();});
     }, //去lsy服务器获取downloadable list，现在只是根目录，理论上应该做成递归的函数，访问所有的子文件夹  
     showDownloadableList: function() {
-        var that = this;
 		var index = downloadableList.list;
 		var fileIndex = $("#fileIndex");
 		fileIndex.children().remove();
@@ -82,7 +78,7 @@ var fileSystem = {
 			}
 			fileLi.on("click", {
 			name: index[i].name
-		    }, that.ondownloadHandler);//给ondownloadhandler传了一个data的数据，可以用event.data访问得到
+		    }, fileSystem.ondownloadHandler);//给ondownloadhandler传了一个data的数据，可以用event.data访问得到
 		    fileIndex.append(fileLi);
 	    }
 	}, //将downloadable list显示出来，待完成：增加悬停效果，换成其他元素，显示文件大小等信息
@@ -156,11 +152,9 @@ var fileSystem = {
 	    return ulOnceDeferred;
     },//处理把所有文件碎片都上传一次
     ondownloadHandler : function(event) {
-        var that = this;
 	    var targetFile = event.data.name;//请在本文中搜索event.data能搜到是哪里传给这里的
 	    console.log("target file");
 	    console.log(targetFile);
-	    var deferred;
 	    var feedbackList;
 	    var originalFilename = event.data.name;
 	    var originalFileMd5;
@@ -169,12 +163,12 @@ var fileSystem = {
 	    var beginTime,endTime,totalTime,speed;
 	    var deferred = new $.Deferred();
 	    var downloadDeferred = new $.Deferred();
-	    deferred = ownServer.virfiles_show(that.userName, targetFile, that.authen_token);
+	    deferred = ownServer.virfiles_show(fileSystem.userName, targetFile, fileSystem.authen_token);
 	    deferred.then(function(xhr) {
 		    feedbackList = JSON.parse(xhr.response);
 		    originalFileMd5 = feedbackList.file_md5;
 		    originalFileSha1 = feedbackList.file_sha1;
-		    fileList = tool.ownServerDownFragListToDownFragList(feedbackList);
+		    fileList = utils.ownServerDownFragListToDownFragList(feedbackList);
 		    $("#textConsoleDiv").append("<p>download begins.</p>");
 		    beginTime=new Date().getTime();
 	    }).then(downloadAllFrag).then(function() {
