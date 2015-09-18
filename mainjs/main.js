@@ -89,8 +89,6 @@ function onUploadHandler()
     fileSystem.create(uploadSelect.files[0]);
 }
 
-
-
 var sendUlAjax = {
 	"xinlang": function(file, name) {
 		console.log("xinlang", file, name);
