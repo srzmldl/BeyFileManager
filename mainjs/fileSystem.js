@@ -49,7 +49,7 @@ var fileSystem = {
 		    $("#textConsoleDiv").append("<p>upload complete,now begin to upload message to ownServer server.</p>");
 		    console.log("now begin to upload message to ownServer server");
 		    console.log(fragDoneList);
-		    return (utils.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
+		    return (tool.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
 	    }).then(function(finalUplaodInfo) {
 		    return (ownServer.virfiles_create(finalUplaodInfo));
 	    }).then(function(xhr) {
@@ -168,7 +168,7 @@ var fileSystem = {
 		    feedbackList = JSON.parse(xhr.response);
 		    originalFileMd5 = feedbackList.file_md5;
 		    originalFileSha1 = feedbackList.file_sha1;
-		    fileList = utils.ownServerDownFragListToDownFragList(feedbackList);
+		    fileList = tool.ownServerDownFragListToDownFragList(feedbackList);
 		    $("#textConsoleDiv").append("<p>download begins.</p>");
 		    beginTime=new Date().getTime();
 	    }).then(downloadAllFrag).then(function() {

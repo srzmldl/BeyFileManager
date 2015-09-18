@@ -124,7 +124,7 @@ var sendUlAjax = {
 			root: "app_folder",
 			path: "" + name
 		};
-		params["oauth_signature"] = tool.kuaipan_signature(url, params, "POST");
+		params["oauth_signature"] = utils.kuaipan_signature(url, params, "POST");
 		url += "?";
 		for (key in params) {
 			url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
@@ -180,7 +180,7 @@ var sendDlAjax = {
 			root: "app_folder",
 			path: addr //the official demo is without a "/" at the very front of addr
 		};
-		params["oauth_signature"] = tool.kuaipan_signature(url, params, "GET");
+		params["oauth_signature"] = utils.kuaipan_signature(url, params, "GET");
 		url += "?";
 		for (key in params) {
 			url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
