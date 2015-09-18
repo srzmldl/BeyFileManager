@@ -18,10 +18,11 @@
    - onUploadHandler
      + 功能: 捕捉上传动作,调用文件系统create函数
      + 返回值: 无
-*** uploadServerList
-  - 所有盘列表
+  - uploadServerList
+     + 所有盘列表
 ** cloud/*
-   请按照如下要求模拟封装网盘
+   请按照如下要求模仿jinshan,xinlang封装网盘
+   - 文件名统一小写,封装之后的包首字母大写
    - evaluateValue
      + 为估值参数,每个碎片独立选择最小的.
      + 规则:
