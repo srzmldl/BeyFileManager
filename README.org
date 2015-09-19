@@ -1,0 +1,11 @@
+* Introduction
+  This is the client of /distributed filesystem based on commecial cloud storage/
+* Tips
+  It's being developed now, and couldn't work normally sometimes. 
+  The last work well version commit is "a1c833c0ba01efa1193009b73cbef4c3b55f34e6", please rollback to test.
+* How to use
+  - git clone git@git.ustclug.org:ben/BeyFileManager.git
+  - input chrome://extensions/ in address bar of chrome
+  - enable developer mode
+  - load unpacked extensions and select BeyFileManager
+  - enjoy your distributed filesystem. ^_^
