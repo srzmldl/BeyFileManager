@@ -6,7 +6,14 @@
 // 不考虑.
 
 var Jinshan = {
-    oauth_token : "058560f25d3e696d1f2fd3b8",
+   	consumer_key = 'xcBFwv9CJNIaUfO4',
+    consumer_secret = 'BweeUfcIhh1hVgmx',
+    oauth_token = '058560f25d3e696d1f2fd3b8',
+    oauth_token_secret = '810c09dc238d4f25aa4f8a24cbf9ab1e',
+    signature_method = 'HMAC-SHA1',
+    oauth_version = '1.0',
+    evaluateValue: 0,
+
     kuaipan_signature: function (url, params, method) {
         var consumer_secret = Jinshan.consumer_secret;
         var oauth_token_secret = Jinshan.oauth_token_secret;
@@ -36,6 +43,7 @@ var Jinshan = {
     },
 
     sendUlAjax: function(file, name) {
+    	Jinshan.evaluateValue += 1;
 		console.log("jinshan", file, name);
 		var formData = new FormData();
 		formData.append("file", file, name);
@@ -63,7 +71,13 @@ var Jinshan = {
 			type: "POST",
 			contentType: false,
 			processData: false,
-			data: formData
+			data: formData,
+			success: function() {
+				Jinshan.evaluateValue -= 1;
+			},
+			error: function() {
+				Jinshan.evaluateValue += 5;
+			}
 		});
 		return (uploadAjax);
 	    },
@@ -71,6 +85,7 @@ var Jinshan = {
     evaluateValue: 0,
         
     sendDlAjax: function(addr) {
+    	Jinshan.evaluateValue += 1;
 		var ajaxDeferred = new $.Deferred();
 		var url = "http://api-content.dfs.kuaipan.cn/1/fileops/download_file";
 		var params = {
@@ -94,14 +109,17 @@ var Jinshan = {
 		downloadAjax.responseType = 'blob';
 		downloadAjax.onload = function(event) {
 			if (event.target.status == 200) {
+				Jinshan.evaluateValue -= 1;
 				ajaxDeferred.resolve(event.target);
 			} else {
+				Jinshan.evaluateValue += 5;
 				ajaxDeferred.reject(event.target);
 			}
 			console.log("loaded");
 			console.log(event.target);
 		};
 		downloadAjax.onerror = function(event) {
+			Jinshan.evaluateValue += 5;
 			console.log("error");
 			console.log(event.target);
 			ajaxDeferred.reject(event.target);

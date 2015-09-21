@@ -1,15 +1,9 @@
 var Xinlang = {
     access_token : "01336d6662WklwB2XjPlj4ctwDY6dc89",
-    oauth_token: "058560f25d3e696d1f2fd3b8",
-    oauth_consumer_key: "xcBFwv9CJNIaUfO4",
-    oauth_signature_method: "HMAC-SHA1",
-    oauth_version: "1.0",
-    consumer_secret: "BweeUfcIhh1hVgmx",
-    oauth_token_secret: "810c09dc238d4f25aa4f8a24cbf9ab1e",
-    
     evaluateValue: 0,
             
     sendUlAjax:  function(file, name) { // reture defer
+    	Xinlang.evaluateValue += 1;
 		console.log("xinlang", file, name);
 		var url = "http://upload-vdisk.sina.com.cn/2/files/sandbox/";
 		url = url + encodeURIComponent(name) + "?access_token=" + Xinlang.access_token;
@@ -21,12 +15,19 @@ var Xinlang = {
 			contentType: false,
 			processData: false,
 			//contentType: "multipart/form-data",
-			data: formData
+			data: formData,
+			success: function() {
+				Xinlang.evaluateValue -= 1;
+			},
+			error: function() {
+				Xinlang.evaluateValue += 5;
+			}
 		});
 		return (uploadAjax);
 	},
 
     sendDlAjax: function(addr) { //return defer
+    	Xinlang.evaluateValue += 1;
 		var ajaxDeferred = new $.Deferred();
 		var url = "https://api.weipan.cn/2/files/sandbox/";
 		var access_token = Xinlang.access_token;
@@ -36,14 +37,17 @@ var Xinlang = {
 		downloadAjax.responseType = 'blob';
 		downloadAjax.onload = function(event) {
 			if (event.target.status == 200) {
+				Xinlang.evaluateValue -= 1;
 				ajaxDeferred.resolve(event.target);
 			} else {
+				Xinlang.evaluateValue += 5;
 				ajaxDeferred.reject(event.target);
 			}
 			console.log("loaded");
 			console.log(event.target);
 		};
 		downloadAjax.onerror = function(event) {
+			Xinlang.evaluateValue += 5;
 			console.log("error");
 			console.log(event.target);
 			ajaxDeferred.reject(event.target);
