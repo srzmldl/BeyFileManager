@@ -209,16 +209,15 @@ var utils = {
 
 		finalUplaodInfo.frag_arr = [];
 		var i, j, k;
-		for (i = 0, j = 0; i < finishedList.length; i++) {
-			for (k = 0; k < finishedList[i].uploadedServer.length; k++) {
+        for (i = 0, j = 0; i < finishedList.length; i++) {
+            for (k = 0; k < finishedList.uploadedServer.length; ++k)
 				finalUplaodInfo.frag_arr[j] = {};
-				finalUplaodInfo.frag_arr[j].addr = finishedList[i].uploadedServer[k].addr;
+		        finalUplaodInfo.frag_arr[j].addr = finishedList[i].uploadedServer[k].addr;
 				finalUplaodInfo.frag_arr[j].server_name = finishedList[i].uploadedServer[k].panname;
 				finalUplaodInfo.frag_arr[j].index = finishedList[i].index;
 				finalUplaodInfo.frag_arr[j].sha1 = finishedList[i].sha1;
-				finalUplaodInfo.frag_arr[j].md5 = finishedList[i].md5;
-				j++;
-			}
+			    finalUplaodInfo.frag_arr[j].md5 = finishedList[i].md5;
+                ++j;
 		}
 		finalUplaodInfo.authen_token = authen_token;
 		return finalUplaodInfo;

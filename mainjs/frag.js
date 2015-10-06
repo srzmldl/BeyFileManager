@@ -3,8 +3,8 @@ var Frag = function(item) {
     this.vis = [];
     this.uploadTimeLim = 2;
     this.errorTimeLim = 2;
-    var tmpFragDoneList = [];
-    
+
+    var fragDoneItem;
     var uploadTimeLeft;
     var errorTimeLeft;
     this.upload = function() {
@@ -15,9 +15,10 @@ var Frag = function(item) {
         uploadTimeLeft = that.uploadTimeLim;
         errorTimeLeft = that.errorTimeLim;
         var defer = new $.Deferred();
+        fragDoneItem = item;
         uploadAll(that).then(
             function() {
-                defer.resolve(tmpFragDoneList);
+                defer.resolve(fragDoneItem);
             },
             function () {
                 defer.reject();
@@ -47,16 +48,13 @@ var Frag = function(item) {
 		var promise = serverUsing.sendUlAjax(item.content, item.filename);
 	    promise.then(function(a, b, c) {
             uploadTimeLeft--;
-            tmpFragDoneList.push({})
-			item.uploadedServer.push({
+            fragDoneItem.uploadedServer.push({
 				panname: serverUsing,
 				addr: item.filename
 			});
-			fragDoneList.push(item);
-			console.log(a, b, c);
-			server.push(serverUsing);
-			ulOnce();
-			return;
+		    console.log(a, b, c);
+            if (uploadTimeLeft <= 0) defer.resolve();
+            else uploadAll(that);    
 		}, function(a, b, c) {
 			console.log(a, b, c);
 			errorTimeLeft--;
@@ -64,7 +62,8 @@ var Frag = function(item) {
 		        console.log("Error Times:"+ that.errorTimeLim);
 				console.log("errorItem", item);
 			    console.log("fragDoneList",that.tmpfragDoneList);
-				$("#textConsoleDiv").append("<p>Server Error.</p>");
+			    $("#textConsoleDiv").append("<p>Server Error.</p>");
+                defer.reject();
 			} else {
                 uploadAll(that);
 			}

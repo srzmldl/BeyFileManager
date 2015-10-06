@@ -94,9 +94,9 @@ var fileSystem = {
             fragArr[i] = new Frag(fragList[i]);
             var deferFrag = fragArr[i].upload();
             deferFrag.then(
-                function(tmpFragDoneList){
+                function(fragDoneItem){
                     fragLeftCnt--;
-                    fragDoneList = fragDoneList.concat(tmpFragDoneList);
+                    fragDoneList = fragDoneList.push(fragDoneItem);
                     if (fragLeftCnt <= 0)
                         uploadDeferred.resolve(fragDoneList);
                     },
