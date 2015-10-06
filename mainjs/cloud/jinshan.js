@@ -6,18 +6,18 @@
 // 不考虑.
 
 var Jinshan = {
-    consumer_key : 'xcBFwv9CJNIaUfO4',
-    consumer_secret : 'BweeUfcIhh1hVgmx',
+    oauth_consumer_key : 'xcBFwv9CJNIaUfO4',
+    oauth_consumer_secret : 'BweeUfcIhh1hVgmx',
     oauth_token : '058560f25d3e696d1f2fd3b8',
     oauth_token_secret : '810c09dc238d4f25aa4f8a24cbf9ab1e',
-    signature_method : 'HMAC-SHA1',
+    oauth_signature_method : 'HMAC-SHA1',
     oauth_version : '1.0',
     evaluateValue : 0,
 
     kuaipan_signature: function (url, params, method) {
-        var consumer_secret = Jinshan.consumer_secret;
+        var oauth_consumer_secret = Jinshan.oauth_consumer_secret;
         var oauth_token_secret = Jinshan.oauth_token_secret;
-        var secret = consumer_secret + "&";
+        var secret = oauth_consumer_secret + "&";
         if ("oauth_token" in params)
             secret += oauth_token_secret;
         var base = method + "&" + encodeURIComponent(url) + "&";
