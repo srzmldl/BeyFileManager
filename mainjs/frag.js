@@ -41,6 +41,7 @@ var Frag = function(item) {
         var defer = new $.Deferred();
             
         var tmp = -1;
+        var len = uploadServerList.length;
         for (var j = 0; j < len; ++j)
             if (!that.vis[j] && (tmp < 0 || uploadServerList[j].evaluateValue < uploadServerList[tmp].evaluateValue))
                 tmp = j;
