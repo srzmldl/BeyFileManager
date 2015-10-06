@@ -159,7 +159,6 @@ var utils = {
                             index: fileNum,
                             content: blob.slice(start, end),
                             filename: file.name + "." + (fileNum++),
-                            uploadedTimes: 0,
                             uploadedServer: [],
                             md5: "",
                             sha1: ""

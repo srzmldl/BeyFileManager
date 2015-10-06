@@ -87,7 +87,7 @@ var fileSystem = {
         
 	    var fragDoneList = [];
 	    var uploadDeferred = $.Deferred();
-        var fragLeft = fragList.length;
+        var fragLeftCnt = fragList.length;
         var fragArr = [];
 
         for (var i = 0, len = fragList.length; i < len; i++){
@@ -95,15 +95,14 @@ var fileSystem = {
             var deferFrag = fragArr[i].upload();
             deferFrag.then(
                 function(tmpFragDoneList){
-                    fragLeft--;
+                    fragLeftCnt--;
                     fragDoneList = fragDoneList.concat(tmpFragDoneList);
-                    if (fragLeft <= 0)
+                    if (fragLeftCnt <= 0)
                         uploadDeferred.resolve(fragDoneList);
                     },
-                   function() { uploadDeferred.reject();}
+                function() { uploadDeferred.reject();}
             );
         }
-
 	    return uploadDeferred;
     },//处理把所有文件碎片都上传一次
 
