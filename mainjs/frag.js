@@ -53,6 +53,7 @@ var Frag = function(item) {
 				panname: serverUsing,
 				addr: item.filename
 			});
+            that.vis[tmp] = 1;
 		    console.log(a, b, c);
             if (uploadTimeLeft <= 0) defer.resolve();
             else {

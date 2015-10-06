@@ -5,7 +5,7 @@ document.getElementById("loginSubmit").addEventListener('click', loginHandler, f
 
 //var xinlang = Xinlang;
 //var jinshan = Jinshan;
-var uploadServerList = [Jinshan, Jinshan];//上传用到的那个服务器列表;
+var uploadServerList = [Xinlang, Jinshan];//上传用到的那个服务器列表;
 
 var user_current = new User();
 
