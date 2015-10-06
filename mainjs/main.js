@@ -3,7 +3,7 @@ zip.workerScriptsPath = "/js/";
 document.getElementById("uploadClick").addEventListener('click', onUploadHandler, false);
 document.getElementById("loginSubmit").addEventListener('click', loginHandler, false);
 
-var uploadServerList = ["xinlang", "jinshan", "xinlang", "jinshan"];//上传用到的那个服务器列表;
+var uploadServerList = [Xinlang, Jinsha];//上传用到的那个服务器列表;
 
 var user_current = new User();
 

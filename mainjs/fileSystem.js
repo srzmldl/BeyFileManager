@@ -85,71 +85,26 @@ var fileSystem = {
     
     uploadManager : function(fragList) {
         
-	    var server = uploadServerList.concat();
-	    var running = 0;
-	    var errorTimes = 0;
-	    var fragAmount = fragList.length;
 	    var fragDoneList = [];
-	    var ulOnceDeferred = $.Deferred();
+	    var uploadDeferred = $.Deferred();
+        var fragLeft = fragList.length;
+        var fragArr = [];
 
-	    function singleUl(item, serverUsing) {
-		    // item={
-		    // 	index: fileNum,
-		    // 	content: blob.slice(start, end),
-		    // 	filename: file.name + "." + (fileNum++),
-		    // 	uploadedTimes: 0,
-		    // 	uploadedServer: [],
-		    // 	md5: "",
-		    // 	sha1: ""
-		    // }
-		    var promise = sendUlAjax[serverUsing](item.content, item.filename);
-		    promise.then(function(a, b, c) {
-			    item.uploadedTimes++;
-			    item.uploadedServer.push({
-				    panname: serverUsing,
-				    addr: item.filename
-			    });
-			    fragDoneList.push(item);
-			    console.log(a, b, c);
-			    running--;
-			    server.push(serverUsing);
-			    ulOnce();
-			    return;
-		    }, function(a, b, c) {
-			    fragList.push(item);
-			    console.log(a, b, c);
-			    running--;
-			    errorTimes++;
-			    if(errorTimes>3){
-				    console.log("Error Times:"+errorTimes);
-				    console.log("fragList",fragList);
-				    console.log("fragDoneList",fragDoneList);
-				    $("#textConsoleDiv").append("<p>Server Error.</p>");
-			    }else{
-				    server.push(serverUsing);
-				    ulOnce();
-			    }
-			    return;
-		    });
-	    }
+        for (var i = 0, len = fragList.length; i < len; i++){
+            fragArr[i] = new Frag(fragList[i]);
+            var deferFrag = fragArr[i].upload();
+            deferFrag.then(
+                function(tmpFragDoneList){
+                    fragLeft--;
+                    fragDoneList = fragDoneList.concat(tmpFragDoneList);
+                    if (fragLeft <= 0)
+                        uploadDeferred.resolve(fragDoneList);
+                    },
+                   function() { uploadDeferred.reject();}
+            );
+        }
 
-	    function ulOnce() {
-		    var item;
-		    var serverUsing;
-		    while (server.length > 0 && fragList.length > 0) {
-			    item = fragList.shift();
-			    serverUsing = server.shift();
-			    setTimeout(singleUl,1000,item, serverUsing);
-			    running++;
-		    }
-		    if (fragList.length === 0 & fragDoneList.length === fragAmount) {
-			    ulOnceDeferred.resolve(fragDoneList);
-		    }
-	    }
-
-	    ulOnce();
-
-	    return ulOnceDeferred;
+	    return uploadDeferred;
     },//处理把所有文件碎片都上传一次
 
     ondownloadHandler : function(event) {
