@@ -55,7 +55,12 @@ var Frag = function(item) {
 			});
 		    console.log(a, b, c);
             if (uploadTimeLeft <= 0) defer.resolve();
-            else uploadAll(that);    
+            else {
+                uploadAll(that).then(
+                    function() {defer.resolve();},
+                    function() {defer.reject();}
+                );
+            }
 		}, function(a, b, c) {
 			console.log(a, b, c);
 			errorTimeLeft--;
@@ -66,10 +71,13 @@ var Frag = function(item) {
 			    $("#textConsoleDiv").append("<p>Server Error.</p>");
                 defer.reject();
 			} else {
-                uploadAll(that);
+                uploadAll(that).then(
+                    function() {defer.resolve();},
+                    function() {defer.reject();}
+                );
 			}
-			return;
 		});
+        return defer;
 	}
     
     
