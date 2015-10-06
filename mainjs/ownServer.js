@@ -1,5 +1,5 @@
 var ownServer = {
-    
+        
     url_base  : "http://128.199.214.15" ,
 	user_show :  function(name, authen_token) {
 		// show the profile by token and user_name after verify.

@@ -1,7 +1,7 @@
 var Frag = function(item) {
     this.item = item;
     this.vis = [];
-    this.uploadTimeLim = 2;
+    this.uploadTimeLim = 1;
     this.errorTimeLim = 2;
 
     var fragDoneItem;
@@ -50,7 +50,7 @@ var Frag = function(item) {
 	    promise.then(function(a, b, c) {
             uploadTimeLeft--;
             fragDoneItem.uploadedServer.push({
-				panname: serverUsing,
+		        panname: uploadServerName[tmp],
 				addr: item.filename
 			});
             that.vis[tmp] = 1;
