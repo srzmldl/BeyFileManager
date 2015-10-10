@@ -17,7 +17,7 @@ function loginHandler(event) {
     deferred = user_current.handle_login_form();
     deferred.then(
         function(){
-            //fileSystem.init(user_current.user_name, user_current.authen_token);
+            fileSystem.init(user_current.user_name, user_current.authen_token);
         }
     );
     } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性

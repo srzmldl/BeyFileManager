@@ -58,6 +58,29 @@ var fileSystem = {
 	        }).then(fileSystem.getDownloadableList);
     }, //待完成：上传时链接频繁出错的时候要停止..
 
+    uploadManager : function(fragList) {
+        
+	    var fragDoneList = [];
+	    var uploadDeferred = $.Deferred();
+        var fragLeftCnt = fragList.length;
+        var fragArr = [];
+
+        for (var i = 0, len = fragList.length; i < len; i++){
+            fragArr[i] = new Frag(fragList[i]);
+            var deferFrag = fragArr[i].upload();
+            deferFrag.then(
+                function(fragDoneItem){
+                    fragLeftCnt--;
+                    fragDoneList.push(fragDoneItem);
+                    if (fragLeftCnt <= 0)
+                        uploadDeferred.resolve(fragDoneList);
+                    },
+                function() { uploadDeferred.reject();}
+            );
+        }
+	    return uploadDeferred;
+    },//处理把所有文件碎片都上传一次
+        
     getDownloadableList : function() {
 	    var deferred = ownServer.virfiles_index(fileSystem.userName, "", fileSystem.authen_token);
 	    deferred.then(function(xhr) {
@@ -83,28 +106,6 @@ var fileSystem = {
 	    }
 	}, //将downloadable list显示出来，待完成：增加悬停效果，换成其他元素，显示文件大小等信息
     
-    uploadManager : function(fragList) {
-        
-	    var fragDoneList = [];
-	    var uploadDeferred = $.Deferred();
-        var fragLeftCnt = fragList.length;
-        var fragArr = [];
-
-        for (var i = 0, len = fragList.length; i < len; i++){
-            fragArr[i] = new Frag(fragList[i]);
-            var deferFrag = fragArr[i].upload();
-            deferFrag.then(
-                function(fragDoneItem){
-                    fragLeftCnt--;
-                    fragDoneList = fragDoneList.push(fragDoneItem);
-                    if (fragLeftCnt <= 0)
-                        uploadDeferred.resolve(fragDoneList);
-                    },
-                function() { uploadDeferred.reject();}
-            );
-        }
-	    return uploadDeferred;
-    },//处理把所有文件碎片都上传一次
 
     ondownloadHandler : function(event) {
 	    var targetFile = event.data.name;//请在本文中搜索event.data能搜到是哪里传给这里的
