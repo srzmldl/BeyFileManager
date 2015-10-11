@@ -106,7 +106,6 @@ var fileSystem = {
 	    }
 	}, //将downloadable list显示出来，待完成：增加悬停效果，换成其他元素，显示文件大小等信息
     
-
     ondownloadHandler : function(event) {
 	    var targetFile = event.data.name;//请在本文中搜索event.data能搜到是哪里传给这里的
 	    console.log("target file");
