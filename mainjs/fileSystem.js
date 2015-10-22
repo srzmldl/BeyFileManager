@@ -100,7 +100,7 @@ var fileSystem = {
 				fileLi = $("<li><a>()" + index[i].name + "</a><li>");
 			}
 			fileLi.on("click", {
-			name: index[i].name
+			    name: index[i].name
 		    }, fileSystem.ondownloadHandler);//给ondownloadhandler传了一个data的数据，可以用event.data访问得到
 		    fileIndex.append(fileLi);
 	    }
@@ -177,7 +177,6 @@ var fileSystem = {
 		    }
 	    };
 	    var sharedList = [];
-
 
 	    function downloadAllFrag() { //only initial all the server ajax requests
 		    var i;
