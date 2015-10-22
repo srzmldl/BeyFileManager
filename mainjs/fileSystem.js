@@ -4,7 +4,14 @@ var fileSystem = {
     userName : "",
     authen_token : "",
     evaluateValue: 0,
-    init: function(name, token) {
+    uploadProgress:{
+    	totalSize:0,
+    	beginTime:0,
+    	endTime:0,
+    	progressPoint:0,
+    	lastTime:0
+    },
+    init: function(name, token){
     	fileSystem.userName = name;
     	fileSystem.authen_token = token;
         fileSystem.getDownloadableList();
@@ -13,12 +20,19 @@ var fileSystem = {
     create : function(file) {
 	    var originalFileSha1, originalFileMd5;
 	    var fragList=[];
-	    var beginTime,endTime,totalTime,speed;
-	    if (file === undefined) {
-		    alert("you are not selecting a file!");
-		    return;
-	    }
-	    $("#textConsoleDiv").append("<p>Task accepted.Now begin compression.</p>");
+	    var totalTime,speed;
+	    fileSystem.uploadProgress.totalSize=file.size;
+	    
+	    var htmlcontent='<li class="collection-item avatar">';
+    	htmlcontent+='<i class="material-icons circle red"></i>';
+    	htmlcontent+='<span class="title">'+file.name+'<br/>file size is '+Math.round(file.size/1024/1024)+'MB.</span>';//filename
+    	htmlcontent+='<p class="information">informations here</p>';
+    	htmlcontent+='<p>Speed:<span class="speed">0</span>kb/s</p>';
+    	htmlcontent+='<div class="row" style="margin-bottom:0;"><div class="col s2">Progress:</div><div class="progress col s10"><div class="determinate" style="width: 0%"></div></div></div>';
+    	htmlcontent+='<div class="preloader-wrapper small active secondary-content"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>';
+    	$(htmlcontent).appendTo($("#uploadingList"));
+
+	    $("#uploadingList > li:last > p.information").text("Task accepted.Now begin compression.");
 	    utils.md5Calculator(file).then(function(md5) {
 		    originalFileMd5 = md5;
 		    return;
@@ -31,22 +45,23 @@ var fileSystem = {
 	        return utils.compressionAndDivision(file, fragList);
 	    }).then(function(fragList) {
 		    console.log("compression completed,now calculate hash.");
-		    $("#textConsoleDiv").append("<p>compression completed,now calculate hash.</p>");
+		    $("#uploadingList > li:last > p.information").text("compression completed,now calculate hash.");
 		    console.log(fragList);
 		    return utils.calMd5AndSha1(fragList);
 	    }).then(function(fragList) {
 		    console.log("hash-computing completed,now upload.");
-		    $("#textConsoleDiv").append("<p>hash-computing completed,now upload.</p>");
+   		    $("#uploadingList > li:last > p.information").text("hash-computing completed,now upload.");
 		    console.log(fragList);
-		    beginTime=new Date().getTime();
+		    fileSystem.uploadProgress.beginTime=new Date().getTime();
+		    fileSystem.uploadProgress.lastTime=new Date().getTime();
 		    return fileSystem.uploadManager(fragList);
 	    }).then(function(fragDoneList) {
-		    endTime=new Date().getTime();
-		    totalTime=(endTime-beginTime)/1000;
+		    fileSystem.uploadProgress.endTime=new Date().getTime();
+		    totalTime=(fileSystem.uploadProgress.endTime-fileSystem.uploadProgress.beginTime)/1000;
 		    speed=file.size/totalTime/1024;
 		    console.log("upload completed");
-		    $("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
-		    $("#textConsoleDiv").append("<p>upload complete,now begin to upload message to ownServer server.</p>");
+		    $("#uploadingList > li:last > p.information").text("The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s");
+		    $("#uploadingList > li:last > p.information").text("upload complete,now begin to upload message to ownServer server.");
 		    console.log("now begin to upload message to ownServer server");
 		    console.log(fragDoneList);
 		    return (utils.upFragListToOwnServerUpList(fileSystem.authen_token, fragDoneList, fileSystem.userName, file.name, originalFileMd5, originalFileSha1));
@@ -54,7 +69,9 @@ var fileSystem = {
 		    return (ownServer.virfiles_create(finalUplaodInfo));
 	    }).then(function(xhr) {
 		    console.log(xhr);
-		    $("#textConsoleDiv").append("<p>upload finished.</p>");
+		    $("#uploadSelect").removeAttr("disabled");
+		    $("#uploadingList > li:last > p.information").text("upload finished.");
+		    $("#uploadingList > li:last > .preloader-wrapper").hide();
 	        }).then(fileSystem.getDownloadableList);
     }, //待完成：上传时链接频繁出错的时候要停止..
 
@@ -85,24 +102,34 @@ var fileSystem = {
 	    var deferred = ownServer.virfiles_index(fileSystem.userName, "", fileSystem.authen_token);
 	    deferred.then(function(xhr) {
 		    downloadableList = JSON.parse(xhr.response);
-	    }).then(function() {fileSystem.showDownloadableList();});
+	    }).then(fileSystem.showDownloadableList);
     }, //去lsy服务器获取downloadable list，现在只是根目录，理论上应该做成递归的函数，访问所有的子文件夹  
     showDownloadableList: function() {
 		var index = downloadableList.list;
 		var fileIndex = $("#fileIndex");
-		fileIndex.children().remove();
-		fileIndex.append("<li>..</li>");
 		var fileLi;
 		for (i = 0, l = index.length; i < l; i++) {
+			// <li class="collection-item avatar">
+			//     <i class="material-icons circle red">insert_drive_file</i>
+			//     <span class="title">Title</span>
+			//     <p>First Line</p>
+			//     <a href="#!" class="secondary-content"><i class="material-icons">file_download</i></a>
+			// </li>
+			var htmlcontent='<li class="collection-item avatar">';
+			htmlcontent+='<i class="material-icons circle red"></i>';
+			htmlcontent+='<span class="title">'+index[i].name+'</span>';//filename
+			htmlcontent+='<div class="progress" hidden>Progress <div class="determinate" style="width: 0%"></div></div>';
+			htmlcontent+='<a class="secondary-content"><i class="material-icons">file_download</i></a>'+'</li>';
+			fileLi = $(htmlcontent);
 			if (index[i].if_file == true) {
-				fileLi = $("<li><a>" + index[i].name + "</a></li>");
+				fileLi.find("i").text('insert_drive_file');
 			} else {
-				fileLi = $("<li><a>()" + index[i].name + "</a><li>");
+				fileLi.find("i").text('folder');
 			}
-			fileLi.on("click", {
-			    name: index[i].name
+			fileLi.find("a").on("click", {
+			name: index[i].name
 		    }, fileSystem.ondownloadHandler);//给ondownloadhandler传了一个data的数据，可以用event.data访问得到
-		    fileIndex.append(fileLi);
+		    fileLi.appendTo(fileIndex);
 	    }
 	}, //将downloadable list显示出来，待完成：增加悬停效果，换成其他元素，显示文件大小等信息
     
