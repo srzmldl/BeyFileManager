@@ -23,8 +23,13 @@ function loginHandler(event) {
     } //用户按登陆时的处理函数，待完成：(1)弹出窗出警告instead of text console，(2)考虑要不要改成div元素直接删掉和直接从零建起，而不是show和hide，提高代码的隐蔽性
 
 function onUploadHandler(){
-    var uploadSelect = document.getElementById("uploadSelect");
-    uploadSelect.disable = true;
-    fileSystem.create(uploadSelect.files[0]);
+    event.stopPropagation();
+    event.preventDefault();
+    var uploadSelect = $("#uploadSelect");
+    if (uploadSelect[0].files[0] === undefined) {
+        Materialize.toast("you are not selecting a file!",4000);
+        return;
+    }
+    uploadSelect.attr("disabled","");
+    fileSystem.create(uploadSelect[0].files[0]);
 }
-

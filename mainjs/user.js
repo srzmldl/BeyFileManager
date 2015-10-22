@@ -12,24 +12,26 @@ var User = function(){
                 that.user_name = loginName;
 	            that.authen_token = xhr.user.authen_token;
 			    $("#loginDiv").hide();
-			    $("#uploadDiv").show();
-		        $("#downloadDiv").show();
+		        $("#mainFrame").show();
+		        $("nav ul > li").eq(0).removeClass("active");
+			    $("nav ul > li").eq(1).addClass("active");
                 ownDefer.resolve();
 		    } else {
                 
                 if (xhr.state == -1) {
-		            $("#textConsole")[0].innerHTML = "Register failed!<br/>user name is shorter than 3!Try again!";
+		            Materialize.toast("Register failed! user name is shorter than 3!Try again!",4000);
 		        } else if (xhr.state == -2) {
-			        $("#textConsole")[0].innerHTML = "Register failed!<br/>password is shorter than 6!Try again!";
+			        Materialize.toast("Register failed! password is shorter than 6!Try again!",4000);
 		        } else if (xhr.state == -3) {
-			        $("#textConsole")[0].innerHTML = "Register failed!<br/>user already exist!Try again!";
+			        Materialize.toast("Register failed! user already exist!Try again!",4000);
 		        } else {
-			        $("#textConsole")[0].innerHTML = "Register failed!<br/>Try again!";
+			        Materialize.toast("Register failed! Try again!",4000);
 		        }
                 ownDefer.reject();
             }
 	    }, function(xhr) {
-		    $("#textConsole")[0].innerHTML = "Connection failed!<br/>Try again!";
+		    Materialize.toast("Connection failed! Try again!",4000);
+		    Materialize.toast(xhr,4000);
             ownDefer.reject();
 	    });
         return ownDefer;
@@ -37,22 +39,22 @@ var User = function(){
 
     
     this.login =  function(loginName, password){
-        
-        var ownDefer = new $.Deferred();
         var deferred = new $.Deferred();
+        var ownDefer = new $.Deferred();
         var that = this;
 	    deferred = ownServer.user_login(loginName, password);
         deferred.then(
             function(xhr) {
                 if (xhr.status == 401) {
-                    $("#textConsole")[0].innerHTML = "login failed! try again!";
+                    Materialize.toast("login failed! try again!",4000);
                     ownDefer.reject();
 		        } else {
                     that.authen_token = JSON.parse(xhr.response).user.authen_token;
                     that.user_name = loginName;
 			        $("#loginDiv").hide();
-			        $("#uploadDiv").show();
-		            $("#downloadDiv").show();
+			        $("#mainFrame").show();
+			        $("nav ul > li").eq(0).removeClass("active");
+			        $("nav ul > li").eq(1).addClass("active");
                     ownDefer.resolve();
 		        }
             }
@@ -61,27 +63,23 @@ var User = function(){
     };
     
     this.handle_login_form = function() {
-        
-	    $("#textConsole")[0].innerHTML = "Text Console";
 	    var loginName = document.getElementById("inputName").value;
 	    var password = document.getElementById("inputPassword").value;
 	    if (loginName.toString().length < 3) {
-		    $("#textConsole")[0].innerHTML = "Register failed!<br/>user name is shorter than 3!Try again!";
-		    return;
+		    Materialize.toast("user name is shorter than 3!Try again!", 4000);
+		    return (new $.Deferred()).reject();
 	    } else if (password.toString().length < 6) {
-		    $("#textConsole")[0].innerHTML = "Register failed!<br/>password is shorter than 6!Try again!";
-		    return;
+		    Materialize.toast("password is shorter than 6!Try again!", 4000);
+		    return (new $.Deferred()).reject();
 	    }
-
 	    var deferred = $.Deferred();
 	    var ifRegister = new Boolean();
-	    if ($("input[value=Login]").prop("checked") === true) {
-		    ifRegister = false;
+	    if ($("input[name=loginMode]:checked").val()=="Login") {
+		    return this.login(loginName, password);
+	    } else if($("input[name=loginMode]:checked").val()=="Register"){
+		    return this.register(loginName, password);
 	    } else {
-		    ifRegister = true;
+	    	Materialize.toast("please choose login or register", 4000);
 	    }
-        
-        if (ifRegister) return this.register(loginName, password);
-        else return this.login(loginName, password);
     }
 }
