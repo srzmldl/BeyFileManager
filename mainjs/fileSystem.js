@@ -4,8 +4,8 @@ var fileSystem = {
     userName : "",
     authen_token : "",
     evaluateValue: 0,
-    uploadProgress:{
-    	totalSize:0,
+    uploadProgress: {
+        totalSize:0,
     	beginTime:0,
     	endTime:0,
     	progressPoint:0,
@@ -149,39 +149,46 @@ var fileSystem = {
 	    var deferred = new $.Deferred();
 	    var downloadDeferred = new $.Deferred();
 	    deferred = ownServer.virfiles_show(fileSystem.userName, targetFile, fileSystem.authen_token);
-	    deferred.then(function(xhr) {
-		    feedbackList = JSON.parse(xhr.response);
-		    originalFileMd5 = feedbackList.file_md5;
-		    originalFileSha1 = feedbackList.file_sha1;
-		    fileList = utils.ownServerDownFragListToDownFragList(feedbackList);
-		    $("#textConsoleDiv").append("<p>download begins.</p>");
-		    beginTime=new Date().getTime();
-	    }).then(downloadAllFrag).then(function() {
-		    var decompressiondeferred = new $.Deferred();
-		    var blob = new Blob(blobList);
-		    var unzipblob;
-		    endTime=new Date().getTime();
-		    totalTime=(endTime-beginTime)/1000;
-		    speed=blob.size/totalTime;
-		    $("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
-		    $("#textConsoleDiv").append("<p>download completed,now decompression.</p>");
-		   
-		    zip.createReader(new zip.BlobReader(blob), function(reader) {
-			    reader.getEntries(function(entries) {
-				    if (entries.length) {
-					    entries[0].getData(new zip.BlobWriter(), function(newblob) {
-						    unzipblob = newblob;
-						    // close the zip reader
-						    reader.close(function() {
-							    // onclose callback
-							    decompressiondeferred.resolve(unzipblob);
-						    });
-					    }, function(current, total) {
-						    // onprogress callback
-					    });
-				    }
+	    deferred.then(
+            function(xhr) {
+		        feedbackList = JSON.parse(xhr.response);
+		        originalFileMd5 = feedbackList.file_md5;
+		        originalFileSha1 = feedbackList.file_sha1;
+		        fileList = utils.ownServerDownFragListToDownFragList(feedbackList);
+		        $("#textConsoleDiv").append("<p>download begins.</p>");
+		        beginTime=new Date().getTime();
+	        }
+        ).then(downloadAllFrag).then(
+            function() {
+		        var decompressiondeferred = new $.Deferred();
+		        var blob = new Blob(blobList);
+		        var unzipblob;
+		        endTime=new Date().getTime();
+		        totalTime=(endTime-beginTime)/1000;
+		        speed=blob.size/totalTime;
+		        $("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
+		        $("#textConsoleDiv").append("<p>download completed,now decompression.</p>");
+		        
+		        zip.createReader(new zip.BlobReader(blob), function(reader) {
+			        reader.getEntries(function(entries) {
+				        if (entries.length) {
+					        entries[0].getData(new zip.BlobWriter(), function(newblob) {
+						        unzipblob = newblob;
+						        // close the zip reader
+						        reader.close(
+                                    function() {
+							            // onclose callback
+							            decompressiondeferred.resolve(unzipblob);
+						            }
+                                );
+					            }, function(current, total) {
+						        // onprogress callback
+                                decompressiondeferred.reject();
+					        });
+				        }
 			    });
-		    }, function(error) {
+		    },
+            function(error) {
 			    // onerror callback
 		    });
 		    return decompressiondeferred;
@@ -210,9 +217,10 @@ var fileSystem = {
                     if (fragLeftCnt <= 0) //全部下载完
                         deferred.resolve();
                     },
-                function() { deferred.reject();}
+                    function() { deferred.reject();}
                 );
             }
 	        return deferred;
         }
+    }
 };

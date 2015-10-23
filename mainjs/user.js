@@ -1,11 +1,9 @@
 var User = function(){
     this.authen_token = "";
     this.user_name = "";
-    
-    this.register = function(loginName, password) {
+    function register(loginName, password, that) {
         var deferred = new $.Deferred();
         var ownDefer = new $.Deferred();
-        var that = this;
         deferred = ownServer.user_register(loginName, password);
 	    deferred.then(function(xhr) {
 		    if (xhr.state == 0) {
@@ -37,11 +35,9 @@ var User = function(){
         return ownDefer;
     };
 
-    
-    this.login =  function(loginName, password){
+    function login(loginName, password, that){
         var deferred = new $.Deferred();
         var ownDefer = new $.Deferred();
-        var that = this;
 	    deferred = ownServer.user_login(loginName, password);
         deferred.then(
             function(xhr) {
@@ -63,6 +59,7 @@ var User = function(){
     };
     
     this.handle_login_form = function() {
+        var that = this;
 	    var loginName = document.getElementById("inputName").value;
 	    var password = document.getElementById("inputPassword").value;
 	    if (loginName.toString().length < 3) {
@@ -75,11 +72,11 @@ var User = function(){
 	    var deferred = $.Deferred();
 	    var ifRegister = new Boolean();
 	    if ($("input[name=loginMode]:checked").val()=="Login") {
-		    return this.login(loginName, password);
+	        return login(loginName, password, that);
 	    } else if($("input[name=loginMode]:checked").val()=="Register"){
-		    return this.register(loginName, password);
+	        return register(loginName, password, that);
 	    } else {
 	    	Materialize.toast("please choose login or register", 4000);
 	    }
     }
-}
+};
