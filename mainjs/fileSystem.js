@@ -11,12 +11,14 @@ var fileSystem = {
     	progressPoint:0,
     	lastTime:0
     },
-    init: function(name, token){
+    // initial filesystem
+    init: function(name, token){ 
     	fileSystem.userName = name;
     	fileSystem.authen_token = token;
         fileSystem.getDownloadableList();
     },
 
+    // create file or directory. TODO  directory
     create : function(file) {
 	    var originalFileSha1, originalFileMd5;
 	    var fragList=[];
@@ -73,31 +75,33 @@ var fileSystem = {
 		    $("#uploadingList > li:last > p.information").text("upload finished.");
 		    $("#uploadingList > li:last > .preloader-wrapper").hide();
 	        }).then(fileSystem.getDownloadableList);
-    }, //待完成：上传时链接频繁出错的时候要停止..
+    },
 
+    // upload a file
     uploadManager : function(fragList) {
         
-	    var fragDoneList = [];
+	    var fragDoneList = []; // 传完后各个碎片的信息
 	    var uploadDeferred = $.Deferred();
-        var fragLeftCnt = fragList.length;
-        var fragArr = [];
+        var fragLeftCnt = fragList.length; //还有多少碎片要传
+        var fragArr = []; //需要传的碎片数组
 
+        //每个碎片时一个Frag实例,独立上传
         for (var i = 0, len = fragList.length; i < len; i++){
             fragArr[i] = new Frag(fragList[i]);
             var deferFrag = fragArr[i].upload();
             deferFrag.then(
                 function(fragDoneItem){
-                    fragLeftCnt--;
-                    fragDoneList.push(fragDoneItem);
-                    if (fragLeftCnt <= 0)
+                    fragLeftCnt--; //上传成功一个碎片,待传碎片数量-1
+                    fragDoneList.push(fragDoneItem); //该碎片的信息push到fragDoneList中
+                    if (fragLeftCnt <= 0) //全部传完
                         uploadDeferred.resolve(fragDoneList);
                     },
                 function() { uploadDeferred.reject();}
             );
         }
 	    return uploadDeferred;
-    },//处理把所有文件碎片都上传一次
-        
+    },
+     
     getDownloadableList : function() {
 	    var deferred = ownServer.virfiles_index(fileSystem.userName, "", fileSystem.authen_token);
 	    deferred.then(function(xhr) {
