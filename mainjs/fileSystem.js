@@ -83,12 +83,12 @@ var fileSystem = {
 	    var fragDoneList = []; // 传完后各个碎片的信息
 	    var uploadDeferred = $.Deferred();
         var fragLeftCnt = fragList.length; //还有多少碎片要传
-        var fragArr = []; //需要传的碎片数组
+        //var fragArr = []; //需要传的碎片数组
 
         //每个碎片时一个Frag实例,独立上传
         for (var i = 0, len = fragList.length; i < len; i++){
-            fragArr[i] = new Frag(fragList[i]);
-            var deferFrag = fragArr[i].upload();
+            var fragNow = new Frag(fragList[i]);
+            var deferFrag = fragNow.upload();
             deferFrag.then(
                 function(fragDoneItem){
                     fragLeftCnt--; //上传成功一个碎片,待传碎片数量-1
@@ -135,8 +135,7 @@ var fileSystem = {
 		    }, fileSystem.ondownloadHandler);//给ondownloadhandler传了一个data的数据，可以用event.data访问得到
 		    fileLi.appendTo(fileIndex);
 	    }
-	}, //将downloadable list显示出来，待完成：增加悬停效果，换成其他元素，显示文件大小等信息
-    
+	    }, //将downloadable list显示出来，待完成：增加悬停效果，换成其他元素，显示文件大小等信息
     ondownloadHandler : function(event) {
 	    var targetFile = event.data.name;//请在本文中搜索event.data能搜到是哪里传给这里的
 	    console.log("target file");
@@ -159,14 +158,14 @@ var fileSystem = {
 		    beginTime=new Date().getTime();
 	    }).then(downloadAllFrag).then(function() {
 		    var decompressiondeferred = new $.Deferred();
-		    blob = new Blob(blobList);
+		    var blob = new Blob(blobList);
 		    var unzipblob;
 		    endTime=new Date().getTime();
 		    totalTime=(endTime-beginTime)/1000;
 		    speed=blob.size/totalTime;
 		    $("#textConsoleDiv").append("<p>The Total time is : "+totalTime+" seconds. The average speed is : "+speed+"  K/s</p>");
 		    $("#textConsoleDiv").append("<p>download completed,now decompression.</p>");
-		    
+		   
 		    zip.createReader(new zip.BlobReader(blob), function(reader) {
 			    reader.getEntries(function(entries) {
 				    if (entries.length) {
@@ -196,21 +195,26 @@ var fileSystem = {
 	    });
 
 	    var blobList = [];
-	    var blob;
-	    var server = {
-		    xinlang: {
-			    avail: 2,
-			    onlyList: [],
-		    },
-		    jinshan: {
-			    avail: 2,
-			    onlyList: []
-		    }
-	    };
-	    var sharedList = [];
-
-	    function downloadAllFrag() { //only initial all the server ajax requests
-		    var i;
+       
+        // fileList = [{server[], index, md5, sha1}]
+        function downloadAllFrag() { //only initial all the server ajax requests
+            var deferred = new $.Deferred();
+            var fragLeftCnt = fileList.length;
+            for (var i = 0; i < fileList.length; ++i) {
+                var fragNow = new Frag(fileList[i]);
+                var deferFrag = fragNow.download();
+                deferFrag.then(
+                    function(fragDoneBlob){
+                    fragLeftCnt--; //上传成功一个碎片,待传碎片数量-1
+                    blobList[i] = fragDoneBlob;
+                    if (fragLeftCnt <= 0) //全部下载完
+                        deferred.resolve();
+                    },
+                function() { deferred.reject();}
+                );
+            }
+	        return deferred;
+        }
 		    var serverUsing, temporaryitem; //temporary variable just to make the code more clear
 		    for (i = 0; i < fileList.length; i++) {
 			    fileList[i].downloadStatus = 0;

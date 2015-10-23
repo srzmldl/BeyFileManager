@@ -24,7 +24,7 @@ var Frag = function(item) {
                 defer.reject();
             }
         )
-        return defer;    
+        return defer;
         // setTimeout(singleUl,1000,item, serverUsing);
     }
     //选择合适的网盘伪并行上传
